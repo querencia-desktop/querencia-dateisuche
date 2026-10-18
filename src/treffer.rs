@@ -4,10 +4,10 @@
 
 use std::cell::{Cell, RefCell};
 
+use gtk::gio;
 use gtk::glib;
 use gtk::glib::prelude::*;
 use gtk::glib::subclass::prelude::*;
-use gtk::gio;
 
 use crate::suche::Fund;
 
@@ -64,7 +64,7 @@ impl Treffer {
         let (mime, typ) = if fund.ist_ordner {
             ("inode/directory".to_string(), "Ordner".to_string())
         } else {
-            let (mime, _unsicher) = gio::content_type_guess(Some(&fund.pfad), &[]);
+            let (mime, _unsicher) = gio::content_type_guess(Some(&fund.pfad), None);
             let typ = gio::content_type_get_description(&mime).to_string();
             (mime.to_string(), typ)
         };

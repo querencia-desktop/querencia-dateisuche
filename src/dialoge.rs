@@ -405,7 +405,7 @@ pub fn oeffnen_mit(parent: &impl IsA<gtk::Window>, datei: &gio::File, mime: &str
             else {
                 return;
             };
-            match app.launch(&[datei.clone()], None::<&gio::AppLaunchContext>) {
+            match app.launch(std::slice::from_ref(&datei), None::<&gio::AppLaunchContext>) {
                 Ok(()) => close_later(&window),
                 Err(e) => error(
                     &window,

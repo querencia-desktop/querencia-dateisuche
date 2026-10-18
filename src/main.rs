@@ -14,6 +14,7 @@ mod fenster;
 mod format;
 mod konfig;
 mod kriterien;
+mod protokoll;
 mod suche;
 mod treffer;
 
@@ -102,23 +103,23 @@ fn main() -> glib::ExitCode {
             .collect();
         let aufruf = aufruf_auswerten(&argumente);
         if let Some(f) = &aufruf.fehler {
-            cmd.printerr_literal(&format!("querencia-dateisuche: {f}\n{HILFETEXT}"));
-            return 2;
+            eprint!("querencia-dateisuche: {f}\n{HILFETEXT}");
+            return glib::ExitCode::from(2);
         }
         if aufruf.version {
-            cmd.print_literal(&format!("{APP_NAME} {}\n", env!("CARGO_PKG_VERSION")));
-            return 0;
+            println!("{APP_NAME} {}", env!("CARGO_PKG_VERSION"));
+            return glib::ExitCode::SUCCESS;
         }
         if aufruf.hilfe {
-            cmd.print_literal(HILFETEXT);
-            return 0;
+            print!("{HILFETEXT}");
+            return glib::ExitCode::SUCCESS;
         }
         let f = fenster::Fenster::neu(app, &aufruf);
         f.present();
         if aufruf.suchen {
             f.suchen();
         }
-        0
+        glib::ExitCode::SUCCESS
     });
     app.run()
 }

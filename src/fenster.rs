@@ -16,9 +16,12 @@ use crate::konfig::Konfig;
 use crate::kriterien::{Anfrage, Art, Eingabe, Kriterium};
 use crate::suche::{self, Abschluss, Lauf, Meldung};
 use crate::treffer::Treffer;
-use crate::{Aufruf, FENSTERTITEL, dialoge, format};
+use crate::{Aufruf, FENSTERTITEL, dialoge, format, protokoll};
 
 const CSS: &str = include_str!("style.css");
+
+/// Eine Aktion des Kontextmenüs.
+type Aktion = fn(&Rc<Fenster>);
 
 /// Größeneinheiten für „Größe mindestens/höchstens“.
 const EINHEITEN: [(&str, u64); 4] = [
@@ -51,7 +54,12 @@ struct Zeile {
 
 impl Zeile {
     fn kriterium(&self) -> Kriterium {
-        let text = || self.text.as_ref().map(|e| e.text().to_string()).unwrap_or_default();
+        let text = || {
+            self.text
+                .as_ref()
+                .map(|e| e.text().to_string())
+                .unwrap_or_default()
+        };
         let zahl = || self.zahl.as_ref().map_or(0.0, |s| s.value());
         match self.art {
             Art::EnthaeltText => Kriterium::EnthaeltText(text()),
@@ -81,7 +89,7 @@ impl Zeile {
 /// Größe in Byte → (Zahl, Einheitenindex), größte Einheit ohne Rest.
 fn einheit_zerlegen(bytes: u64) -> (f64, u32) {
     for (i, (_, f)) in EINHEITEN.iter().enumerate().rev() {
-        if bytes >= *f && bytes % f == 0 {
+        if bytes >= *f && bytes.is_multiple_of(*f) {
             return ((bytes / f) as f64, i as u32);
         }
     }
@@ -141,7 +149,10 @@ fn menue_modell() -> gio::Menu {
     let menu = gio::Menu::new();
     menu.append_section(
         None,
-        &abschnitt(&[("Ö_ffnen", "win.oeffnen"), ("Öffnen _mit …", "win.oeffnen-mit")]),
+        &abschnitt(&[
+            ("Ö_ffnen", "win.oeffnen"),
+            ("Öffnen _mit …", "win.oeffnen-mit"),
+        ]),
     );
     menu.append_section(
         None,
@@ -422,7 +433,11 @@ impl Fenster {
 
     // ------------------------------------------------------------ Aufbau
 
-    fn fabrik(self: &Rc<Self>, mit_symbol: bool, text: fn(&Treffer) -> String) -> gtk::SignalListItemFactory {
+    fn fabrik(
+        self: &Rc<Self>,
+        mit_symbol: bool,
+        text: fn(&Treffer) -> String,
+    ) -> gtk::SignalListItemFactory {
         let fabrik = gtk::SignalListItemFactory::new();
         let w = Rc::downgrade(self);
         fabrik.connect_setup(move |_, obj| {
@@ -450,7 +465,9 @@ impl Fenster {
                     f.modell.set_selected(item.position());
                     let punkt = g
                         .widget()
-                        .and_then(|z| z.compute_point(&f.liste, &graphene::Point::new(x as f32, y as f32)))
+                        .and_then(|z| {
+                            z.compute_point(&f.liste, &graphene::Point::new(x as f32, y as f32))
+                        })
                         .map(|p| (p.x() as i32, p.y() as i32));
                     f.kontextmenue_zeigen(punkt);
                 }
@@ -488,7 +505,8 @@ impl Fenster {
         name.set_expand(true);
         name.set_resizable(true);
 
-        let ordner = gtk::ColumnViewColumn::new(Some("Ordner"), Some(self.fabrik(false, |t| t.ordner())));
+        let ordner =
+            gtk::ColumnViewColumn::new(Some("Ordner"), Some(self.fabrik(false, |t| t.ordner())));
         let s = gtk::StringSorter::new(Some(ausdruck("ordner")));
         s.set_ignore_case(true);
         ordner.set_sorter(Some(&s));
@@ -530,7 +548,7 @@ impl Fenster {
     }
 
     fn aktionen_anlegen(self: &Rc<Self>) {
-        let aktionen: [(&str, fn(&Rc<Fenster>)); 6] = [
+        let aktionen: [(&str, Aktion); 6] = [
             ("oeffnen", |f| f.oeffnen()),
             ("oeffnen-mit", |f| f.oeffnen_mit()),
             ("ordner-oeffnen", |f| f.ordner_oeffnen()),
@@ -652,7 +670,9 @@ impl Fenster {
     /// Gewählte Kriterien (Zeilen, die noch im Fenster hängen).
     fn kriterien(&self) -> Vec<Kriterium> {
         // Entfernte Zeilen (ohne Elternelement) aus der Liste nehmen.
-        self.zeilen.borrow_mut().retain(|z| z.zeile.parent().is_some());
+        self.zeilen
+            .borrow_mut()
+            .retain(|z| z.zeile.parent().is_some());
         self.zeilen.borrow().iter().map(Zeile::kriterium).collect()
     }
 
@@ -666,7 +686,8 @@ impl Fenster {
                 .unwrap_or_else(|| pfad.display().to_string())
         };
         self.ordner_label.set_text(&anzeige);
-        self.ordner_knopf.set_tooltip_text(Some(&pfad.display().to_string()));
+        self.ordner_knopf
+            .set_tooltip_text(Some(&pfad.display().to_string()));
         *self.ordner.borrow_mut() = pfad;
     }
 
@@ -676,13 +697,18 @@ impl Fenster {
         dialog.set_modal(true);
         dialog.set_initial_folder(Some(&gio::File::for_path(&*self.ordner.borrow())));
         let w = Rc::downgrade(self);
-        dialog.select_folder(Some(&self.window), None::<&gio::Cancellable>, move |ergebnis| {
-            if let (Some(f), Ok(datei)) = (w.upgrade(), ergebnis)
-                && let Some(pfad) = datei.path()
-            {
-                f.ordner_setzen(pfad);
-            }
-        });
+        dialog.select_folder(
+            Some(&self.window),
+            None::<&gio::Cancellable>,
+            move |ergebnis| {
+                if let (Some(f), Ok(datei)) = (w.upgrade(), ergebnis)
+                    && let Some(pfad) = datei.path()
+                {
+                    protokoll::schreiben(&format!("ORDNERWAHL {}", pfad.display()));
+                    f.ordner_setzen(pfad);
+                }
+            },
+        );
     }
 
     fn status_setzen(&self, text: &str) {
@@ -701,7 +727,11 @@ impl Fenster {
             muster: self.name.text().to_string(),
             ordner: self.ordner.borrow().clone(),
             kriterien: self.kriterien(),
-            text_max_bytes: u64::from(self.text_max_mb.get()) * 1024 * 1024,
+            text_max_bytes: Konfig {
+                text_max_mb: self.text_max_mb.get(),
+                ..Konfig::default()
+            }
+            .text_max_bytes(),
         };
         match suche::starten(anfrage) {
             Err(e) => dialoge::error(&self.window, "Die Suche kann nicht gestartet werden.", &e),
@@ -714,17 +744,21 @@ impl Fenster {
                 self.fortschritt.set_visible(true);
                 self.status_setzen("Suche läuft …");
                 let fb = self.fortschritt.clone();
-                *self.puls.borrow_mut() = Some(glib::timeout_add_local(Duration::from_millis(80), move || {
-                    fb.pulse();
-                    glib::ControlFlow::Continue
-                }));
+                *self.puls.borrow_mut() = Some(glib::timeout_add_local(
+                    Duration::from_millis(80),
+                    move || {
+                        fb.pulse();
+                        glib::ControlFlow::Continue
+                    },
+                ));
                 let w = Rc::downgrade(self);
-                *self.abholer.borrow_mut() = Some(glib::timeout_add_local(Duration::from_millis(100), move || {
-                    match w.upgrade() {
+                *self.abholer.borrow_mut() = Some(glib::timeout_add_local(
+                    Duration::from_millis(100),
+                    move || match w.upgrade() {
                         Some(f) => f.abholen(),
                         None => glib::ControlFlow::Break,
-                    }
-                }));
+                    },
+                ));
             }
         }
     }
@@ -791,6 +825,12 @@ impl Fenster {
             ));
         }
         self.status_setzen(&text);
+        protokoll::schreiben(&format!("FERTIG {text}"));
+        for i in 0..self.store.n_items() {
+            if let Some(t) = self.store.item(i).and_downcast::<Treffer>() {
+                protokoll::schreiben(&format!("TREFFER {}", t.pfad()));
+            }
+        }
         if self.store.n_items() > 0 && self.modell.selected() == gtk::INVALID_LIST_POSITION {
             self.modell.set_selected(0);
         }
@@ -841,12 +881,14 @@ impl Fenster {
         let Some(t) = self.gewaehlt() else {
             return;
         };
-        if let Err(e) = gio::AppInfo::launch_default_for_uri(&t.datei().uri(), None::<&gio::AppLaunchContext>) {
-            dialoge::error(
+        match gio::AppInfo::launch_default_for_uri(&t.datei().uri(), None::<&gio::AppLaunchContext>)
+        {
+            Ok(()) => protokoll::schreiben(&format!("OEFFNEN {}", t.pfad())),
+            Err(e) => dialoge::error(
                 &self.window,
                 &format!("„{}“ konnte nicht geöffnet werden.", t.name()),
                 e.message(),
-            );
+            ),
         }
     }
 
@@ -863,12 +905,13 @@ impl Fenster {
             return;
         };
         let ordner = gio::File::for_path(t.ordner());
-        if let Err(e) = gio::AppInfo::launch_default_for_uri(&ordner.uri(), None::<&gio::AppLaunchContext>) {
-            dialoge::error(
+        match gio::AppInfo::launch_default_for_uri(&ordner.uri(), None::<&gio::AppLaunchContext>) {
+            Ok(()) => protokoll::schreiben(&format!("ORDNER {}", t.ordner())),
+            Err(e) => dialoge::error(
                 &self.window,
                 &format!("Der Ordner „{}“ konnte nicht geöffnet werden.", t.ordner()),
                 e.message(),
-            );
+            ),
         }
     }
 
@@ -876,6 +919,7 @@ impl Fenster {
         if let Some(t) = self.gewaehlt() {
             self.window.clipboard().set_text(&t.pfad());
             self.status_setzen(&format!("Pfad kopiert: {}", t.pfad()));
+            protokoll::schreiben(&format!("KOPIERT {}", t.pfad()));
         }
     }
 
@@ -886,7 +930,11 @@ impl Fenster {
             return;
         };
         let w = Rc::downgrade(self);
-        let was = if t.ist_ordner() { "Der Ordner" } else { "Die Datei" };
+        let was = if t.ist_ordner() {
+            "Der Ordner"
+        } else {
+            "Die Datei"
+        };
         dialoge::frage(
             &self.window,
             &format!("„{}“ in den Papierkorb verschieben?", t.name()),
@@ -901,16 +949,21 @@ impl Fenster {
                     return;
                 };
                 if !ja {
+                    protokoll::schreiben(&format!("PAPIERKORB-ABGEBROCHEN {}", t.pfad()));
                     return;
                 }
                 match t.datei().trash(None::<&gio::Cancellable>) {
                     Ok(()) => {
+                        protokoll::schreiben(&format!("PAPIERKORB {}", t.pfad()));
                         f.entfernen(&t);
                         f.status_setzen(&format!("„{}“ in den Papierkorb verschoben.", t.name()));
                     }
                     Err(e) => dialoge::error(
                         &f.window,
-                        &format!("„{}“ konnte nicht in den Papierkorb verschoben werden.", t.name()),
+                        &format!(
+                            "„{}“ konnte nicht in den Papierkorb verschoben werden.",
+                            t.name()
+                        ),
                         e.message(),
                     ),
                 }
@@ -921,7 +974,12 @@ impl Fenster {
     fn entfernen(&self, t: &Treffer) {
         let n = self.store.n_items();
         for i in 0..n {
-            if self.store.item(i).and_downcast::<Treffer>().is_some_and(|x| x.pfad() == t.pfad()) {
+            if self
+                .store
+                .item(i)
+                .and_downcast::<Treffer>()
+                .is_some_and(|x| x.pfad() == t.pfad())
+            {
                 self.store.remove(i);
                 break;
             }
@@ -936,29 +994,36 @@ impl Fenster {
         dialog.set_initial_name(Some("suchergebnisse.txt"));
         dialog.set_initial_folder(Some(&gio::File::for_path(glib::home_dir())));
         let w = Rc::downgrade(self);
-        dialog.save(Some(&self.window), None::<&gio::Cancellable>, move |ergebnis| {
-            let (Some(f), Ok(datei)) = (w.upgrade(), ergebnis) else {
-                return;
-            };
-            let Some(pfad) = datei.path() else {
-                return;
-            };
-            let mut text = String::new();
-            for i in 0..f.modell.n_items() {
-                if let Some(t) = f.modell.item(i).and_downcast::<Treffer>() {
-                    text.push_str(&t.pfad());
-                    text.push('\n');
+        dialog.save(
+            Some(&self.window),
+            None::<&gio::Cancellable>,
+            move |ergebnis| {
+                let (Some(f), Ok(datei)) = (w.upgrade(), ergebnis) else {
+                    return;
+                };
+                let Some(pfad) = datei.path() else {
+                    return;
+                };
+                let mut text = String::new();
+                for i in 0..f.modell.n_items() {
+                    if let Some(t) = f.modell.item(i).and_downcast::<Treffer>() {
+                        text.push_str(&t.pfad());
+                        text.push('\n');
+                    }
                 }
-            }
-            match std::fs::write(&pfad, text) {
-                Ok(()) => f.status_setzen(&format!("Ergebnisse gespeichert: {}", pfad.display())),
-                Err(e) => dialoge::error(
-                    &f.window,
-                    &format!("„{}“ konnte nicht geschrieben werden.", pfad.display()),
-                    &e.to_string(),
-                ),
-            }
-        });
+                match std::fs::write(&pfad, text) {
+                    Ok(()) => {
+                        f.status_setzen(&format!("Ergebnisse gespeichert: {}", pfad.display()));
+                        protokoll::schreiben(&format!("GESPEICHERT {}", pfad.display()));
+                    }
+                    Err(e) => dialoge::error(
+                        &f.window,
+                        &format!("„{}“ konnte nicht geschrieben werden.", pfad.display()),
+                        &e.to_string(),
+                    ),
+                }
+            },
+        );
     }
 }
 

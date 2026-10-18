@@ -57,7 +57,7 @@ pub fn tausender(n: usize) -> String {
     let ziffern = n.to_string();
     let mut aus = String::new();
     for (i, z) in ziffern.chars().enumerate() {
-        if i > 0 && (ziffern.len() - i) % 3 == 0 {
+        if i > 0 && (ziffern.len() - i).is_multiple_of(3) {
             aus.push('.');
         }
         aus.push(z);
@@ -78,7 +78,10 @@ mod tests {
         assert_eq!(groesse(1536), "1,5 KB");
         assert_eq!(groesse(10 * 1024 * 1024), "10,0 MB");
         assert_eq!(groesse(250 * 1024 * 1024), "250 MB");
-        assert_eq!(groesse(3 * 1024 * 1024 * 1024 + 400 * 1024 * 1024), "3,4 GB");
+        assert_eq!(
+            groesse(3 * 1024 * 1024 * 1024 + 400 * 1024 * 1024),
+            "3,4 GB"
+        );
         assert_eq!(groesse(2_u64.pow(40) * 5), "5,0 TB");
     }
 

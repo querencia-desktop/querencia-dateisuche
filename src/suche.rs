@@ -189,6 +189,7 @@ mod tests {
     use crate::kriterien::Kriterium;
     use std::fs;
     use std::os::unix::fs::{PermissionsExt, symlink};
+    use std::path::Path;
 
     fn baum(name: &str) -> PathBuf {
         let w = std::env::temp_dir().join(format!("qd-suche-{}-{name}", std::process::id()));
@@ -200,16 +201,20 @@ mod tests {
         fs::write(w.join("a/b/leer.txt"), "").unwrap();
         fs::write(w.join(".versteckt/geheim.txt"), "querencia\n").unwrap();
         fs::write(w.join("sicherung.txt~"), "").unwrap();
-        fs::write(w.join("bild.png"), b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR querencia").unwrap();
+        fs::write(
+            w.join("bild.png"),
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR querencia",
+        )
+        .unwrap();
         // Verknüpfungsschleife
         symlink(&w, w.join("a/schleife")).unwrap();
         w
     }
 
-    fn anfrage(w: &PathBuf, muster: &str, kriterien: Vec<Kriterium>) -> Anfrage {
+    fn anfrage(w: &Path, muster: &str, kriterien: Vec<Kriterium>) -> Anfrage {
         Anfrage {
             muster: muster.into(),
-            ordner: w.clone(),
+            ordner: w.to_path_buf(),
             kriterien,
             text_max_bytes: 1024 * 1024,
         }
@@ -219,7 +224,9 @@ mod tests {
         let mut n: Vec<String> = meldungen
             .iter()
             .filter_map(|m| match m {
-                Meldung::Treffer(f) => Some(f.pfad.file_name().unwrap().to_string_lossy().into_owned()),
+                Meldung::Treffer(f) => {
+                    Some(f.pfad.file_name().unwrap().to_string_lossy().into_owned())
+                }
                 Meldung::Fertig(_) => None,
             })
             .collect();
@@ -248,9 +255,20 @@ mod tests {
     #[test]
     fn versteckte_einbeziehen_und_nur_ordner() {
         let w = baum("versteckt");
-        let m = starten(anfrage(&w, "*.txt*", vec![Kriterium::VersteckteEinbeziehen])).unwrap().alles();
-        assert_eq!(namen(&m), ["geheim.txt", "leer.txt", "notiz.txt", "sicherung.txt~"]);
-        let m = starten(anfrage(&w, "", vec![Kriterium::NurOrdner])).unwrap().alles();
+        let m = starten(anfrage(
+            &w,
+            "*.txt*",
+            vec![Kriterium::VersteckteEinbeziehen],
+        ))
+        .unwrap()
+        .alles();
+        assert_eq!(
+            namen(&m),
+            ["geheim.txt", "leer.txt", "notiz.txt", "sicherung.txt~"]
+        );
+        let m = starten(anfrage(&w, "", vec![Kriterium::NurOrdner]))
+            .unwrap()
+            .alles();
         assert_eq!(namen(&m), ["a", "b"]);
         fs::remove_dir_all(&w).unwrap();
     }
@@ -258,7 +276,13 @@ mod tests {
     #[test]
     fn textsuche_ueberspringt_binaer() {
         let w = baum("text");
-        let m = starten(anfrage(&w, "", vec![Kriterium::EnthaeltText("QUERENCIA".into())])).unwrap().alles();
+        let m = starten(anfrage(
+            &w,
+            "",
+            vec![Kriterium::EnthaeltText("QUERENCIA".into())],
+        ))
+        .unwrap()
+        .alles();
         assert_eq!(namen(&m), ["notiz.txt"]);
         assert_eq!(abschluss(&m).uebersprungen, 1, "bild.png ist binär");
         fs::remove_dir_all(&w).unwrap();
@@ -267,7 +291,9 @@ mod tests {
     #[test]
     fn schleife_mit_verknuepfungen_endet() {
         let w = baum("schleife");
-        let m = starten(anfrage(&w, "notiz*", vec![Kriterium::VerknuepfungenFolgen])).unwrap().alles();
+        let m = starten(anfrage(&w, "notiz*", vec![Kriterium::VerknuepfungenFolgen]))
+            .unwrap()
+            .alles();
         let a = abschluss(&m);
         assert!(a.fehler >= 1, "Schleife wird als Fehler gezählt: {a:?}");
         assert_eq!(a.gefunden, 1);

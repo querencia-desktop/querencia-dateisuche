@@ -581,7 +581,11 @@ mod tests {
 
     #[test]
     fn regulaerer_ausdruck() {
-        let f = Filter::neu(&anfrage("", vec![Kriterium::NameRegex("^[a-z]+\\.rs$".into())])).unwrap();
+        let f = Filter::neu(&anfrage(
+            "",
+            vec![Kriterium::NameRegex("^[a-z]+\\.rs$".into())],
+        ))
+        .unwrap();
         assert!(f.passt_name("main.rs"));
         assert!(!f.passt_name("Main.rs"));
         assert!(Filter::neu(&anfrage("", vec![Kriterium::NameRegex("(".into())])).is_err());
@@ -604,43 +608,72 @@ mod tests {
     fn datum_weniger_und_mehr() {
         let f = Filter::neu(&anfrage("", vec![Kriterium::GeaendertWenigerAls(7)])).unwrap();
         assert!(f.passt_werte(&werte()));
-        assert!(!f.passt_werte(&Werte { alter: Duration::from_secs(8 * TAG), ..werte() }));
+        assert!(!f.passt_werte(&Werte {
+            alter: Duration::from_secs(8 * TAG),
+            ..werte()
+        }));
         let f = Filter::neu(&anfrage("", vec![Kriterium::GeaendertMehrAls(2)])).unwrap();
         assert!(f.passt_werte(&werte()));
-        assert!(!f.passt_werte(&Werte { alter: Duration::from_secs(TAG), ..werte() }));
+        assert!(!f.passt_werte(&Werte {
+            alter: Duration::from_secs(TAG),
+            ..werte()
+        }));
     }
 
     #[test]
     fn groesse_und_leer() {
         let f = Filter::neu(&anfrage("", vec![Kriterium::GroesseMindestens(2048)])).unwrap();
         assert!(f.passt_werte(&werte()));
-        assert!(!f.passt_werte(&Werte { groesse: 2047, ..werte() }));
+        assert!(!f.passt_werte(&Werte {
+            groesse: 2047,
+            ..werte()
+        }));
         let f = Filter::neu(&anfrage("", vec![Kriterium::GroesseHoechstens(1024)])).unwrap();
         assert!(!f.passt_werte(&werte()));
-        assert!(f.passt_werte(&Werte { groesse: 1024, ..werte() }));
+        assert!(f.passt_werte(&Werte {
+            groesse: 1024,
+            ..werte()
+        }));
         let f = Filter::neu(&anfrage("", vec![Kriterium::DateiIstLeer])).unwrap();
-        assert!(f.passt_werte(&Werte { groesse: 0, ..werte() }));
+        assert!(f.passt_werte(&Werte {
+            groesse: 0,
+            ..werte()
+        }));
         assert!(!f.passt_werte(&werte()));
-        assert!(!f.passt_werte(&Werte { groesse: 0, ist_ordner: true, ..werte() }));
+        assert!(!f.passt_werte(&Werte {
+            groesse: 0,
+            ist_ordner: true,
+            ..werte()
+        }));
     }
 
     #[test]
     fn nur_ordner_besitzer_gruppe() {
         let f = Filter::neu(&anfrage("", vec![Kriterium::NurOrdner])).unwrap();
         assert!(!f.passt_werte(&werte()));
-        assert!(f.passt_werte(&Werte { ist_ordner: true, ..werte() }));
+        assert!(f.passt_werte(&Werte {
+            ist_ordner: true,
+            ..werte()
+        }));
         let f = Filter::neu(&anfrage("", vec![Kriterium::Besitzer("1001".into())])).unwrap();
         assert!(f.passt_werte(&werte()));
         assert!(!f.passt_werte(&Werte { uid: 0, ..werte() }));
         let f = Filter::neu(&anfrage("", vec![Kriterium::Gruppe("0".into())])).unwrap();
         assert!(!f.passt_werte(&werte()));
-        assert!(Filter::neu(&anfrage("", vec![Kriterium::Besitzer("gibt-es-nicht-xyz".into())])).is_err());
+        assert!(
+            Filter::neu(&anfrage(
+                "",
+                vec![Kriterium::Besitzer("gibt-es-nicht-xyz".into())]
+            ))
+            .is_err()
+        );
         assert_eq!(uid_fuer("root"), Some(0));
     }
 
     #[test]
     fn id_tabelle() {
-        let passwd = "root:x:0:0:root:/root:/bin/bash\nuser:x:1001:1001::~:/bin/bash\n";
+        let passwd =
+            "root:x:0:0:root:/root:/bin/bash\nuser:x:1001:1001::~:/bin/bash\n";
         assert_eq!(id_aus_tabelle(passwd, "user"), Some(1001));
         assert_eq!(id_aus_tabelle(passwd, "root"), Some(0));
         assert_eq!(id_aus_tabelle(passwd, "steph"), None);
@@ -672,11 +705,23 @@ mod tests {
         let f = Filter::neu(&a).unwrap();
         assert!(f.braucht_inhalt());
         let laenge = |p: &Path| fs::metadata(p).unwrap().len();
-        assert_eq!(f.passt_inhalt(&text, laenge(&text)).unwrap(), Inhalt::Treffer);
-        assert_eq!(f.passt_inhalt(&binaer, laenge(&binaer)).unwrap(), Inhalt::Uebersprungen);
-        assert_eq!(f.passt_inhalt(&gross, laenge(&gross)).unwrap(), Inhalt::Uebersprungen);
+        assert_eq!(
+            f.passt_inhalt(&text, laenge(&text)).unwrap(),
+            Inhalt::Treffer
+        );
+        assert_eq!(
+            f.passt_inhalt(&binaer, laenge(&binaer)).unwrap(),
+            Inhalt::Uebersprungen
+        );
+        assert_eq!(
+            f.passt_inhalt(&gross, laenge(&gross)).unwrap(),
+            Inhalt::Uebersprungen
+        );
         let f = Filter::neu(&anfrage("", vec![Kriterium::EnthaeltText("fehlt".into())])).unwrap();
-        assert_eq!(f.passt_inhalt(&text, laenge(&text)).unwrap(), Inhalt::KeinTreffer);
+        assert_eq!(
+            f.passt_inhalt(&text, laenge(&text)).unwrap(),
+            Inhalt::KeinTreffer
+        );
         assert!(f.passt_inhalt(&ordner.join("nicht-da"), 1).is_err());
         let ohne = Filter::neu(&anfrage("", vec![])).unwrap();
         assert!(!ohne.braucht_inhalt());
@@ -702,7 +747,12 @@ mod tests {
         ];
         assert_eq!(alle.len(), Art::ALLE.len());
         for k in alle {
-            assert_eq!(Kriterium::aus_text(&k.als_text()), Some(k.clone()), "{}", k.als_text());
+            assert_eq!(
+                Kriterium::aus_text(&k.als_text()),
+                Some(k.clone()),
+                "{}",
+                k.als_text()
+            );
         }
         assert_eq!(Kriterium::aus_text("geaendert_weniger=abc"), None);
         assert_eq!(Kriterium::aus_text("unbekannt"), None);

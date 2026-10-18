@@ -51,16 +51,21 @@ impl Konfig {
     pub fn aus_keyfile(kf: &glib::KeyFile) -> Konfig {
         let v = Konfig::default();
         let i32_oder = |gruppe: &str, k: &str, vorgabe: i32| {
-            kf.integer(gruppe, k).ok().filter(|n| *n > 0).unwrap_or(vorgabe)
+            kf.integer(gruppe, k)
+                .ok()
+                .filter(|n| *n > 0)
+                .unwrap_or(vorgabe)
         };
         Konfig {
             breite: i32_oder("Fenster", "Breite", v.breite),
             hoehe: i32_oder("Fenster", "Hoehe", v.hoehe),
-            weitere_sichtbar: kf.boolean("Optionen", "WeitereSichtbar").unwrap_or(v.weitere_sichtbar),
-            kriterien: kf
-                .string_list("Optionen", "Kriterien")
-                .map(|l| l.iter().filter_map(|s| Kriterium::aus_text(s)).collect())
-                .unwrap_or_default(),
+            weitere_sichtbar: kf
+                .boolean("Optionen", "WeitereSichtbar")
+                .unwrap_or(v.weitere_sichtbar),
+            kriterien: (1..=200)
+                .map_while(|i| kf.string("Kriterien", &i.to_string()).ok())
+                .filter_map(|s| Kriterium::aus_text(&s))
+                .collect(),
             text_max_mb: kf
                 .integer("Textsuche", "MaxMB")
                 .ok()
@@ -76,16 +81,29 @@ impl Konfig {
     }
 
     pub fn in_keyfile(&self, kf: &glib::KeyFile) {
-        kf.set_comment(None, None, " Querencia Dateisuche – wird beim Schließen des Fensters geschrieben")
-            .ok();
+        kf.set_comment(
+            None,
+            None,
+            " Querencia Dateisuche – wird beim Schließen des Fensters geschrieben",
+        )
+        .ok();
         kf.set_integer("Fenster", "Breite", self.breite);
         kf.set_integer("Fenster", "Hoehe", self.hoehe);
         kf.set_boolean("Optionen", "WeitereSichtbar", self.weitere_sichtbar);
-        let texte: Vec<String> = self.kriterien.iter().map(Kriterium::als_text).collect();
-        let refs: Vec<&str> = texte.iter().map(String::as_str).collect();
-        kf.set_string_list("Optionen", "Kriterien", &refs);
-        kf.set_integer("Textsuche", "MaxMB", i32::try_from(self.text_max_mb).unwrap_or(10));
-        kf.set_string("Suche", "Ordner", self.letzter_ordner.as_deref().unwrap_or(""));
+        // Ein Schlüssel je Kriterium (1, 2, …), weil Werte ';' enthalten dürfen.
+        for (i, k) in self.kriterien.iter().enumerate() {
+            kf.set_string("Kriterien", &(i + 1).to_string(), &k.als_text());
+        }
+        kf.set_integer(
+            "Textsuche",
+            "MaxMB",
+            i32::try_from(self.text_max_mb).unwrap_or(10),
+        );
+        kf.set_string(
+            "Suche",
+            "Ordner",
+            self.letzter_ordner.as_deref().unwrap_or(""),
+        );
     }
 
     pub fn speichern(&self) -> Result<(), String> {
@@ -127,14 +145,19 @@ mod tests {
         assert_eq!(Konfig::aus_keyfile(&kf), k);
         let text = kf.to_data();
         assert!(text.contains("[Fenster]"));
-        assert!(text.contains("Kriterien="));
+        assert!(text.contains("[Kriterien]"));
+        assert!(text.contains("1=text=a;b=c"));
     }
 
     #[test]
     fn leere_und_kaputte_datei_ergeben_vorgaben() {
         let kf = glib::KeyFile::new();
         assert_eq!(Konfig::aus_keyfile(&kf), Konfig::default());
-        kf.load_from_data("[Fenster]\nBreite=-5\n[Optionen]\nKriterien=unbekannt;leer;\n[Textsuche]\nMaxMB=0\n", glib::KeyFileFlags::NONE).unwrap();
+        kf.load_from_data(
+            "[Fenster]\nBreite=-5\n[Kriterien]\n1=unbekannt\n2=leer\n[Textsuche]\nMaxMB=0\n",
+            glib::KeyFileFlags::NONE,
+        )
+        .unwrap();
         let k = Konfig::aus_keyfile(&kf);
         assert_eq!(k.breite, Konfig::default().breite);
         assert_eq!(k.kriterien, vec![Kriterium::DateiIstLeer]);
