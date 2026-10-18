@@ -22,5 +22,6 @@ App-ID `org.querencia.Dateisuche`, Prototyp 0.1.0.
 
 Bauen: `cargo build --release --locked` (Ubuntu 26.04: cargo, rustc ≥ 1.92,
 pkgconf, libgtk-4-dev; offline mit dem lokalen Cargo-Cache). Prüfen: siehe
-`TESTING.md`. Symbole bewusst **ohne 48×48** (GTK-4.22-Symbolabsturz).
+`TESTING.md`. Programmsymbol nur als SVG (`data/icons/hicolor/scalable`), kein 48×48
+(GTK-4.22-Symbolabsturz); Fenstersymbol = dasselbe SVG als GResource.
 Lizenz: GPL-3.0-or-later.

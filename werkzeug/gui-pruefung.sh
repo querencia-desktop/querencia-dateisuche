@@ -9,7 +9,6 @@ E=$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)
 PROFIL=$E/gui-test/profil
 [ -d "$E/gui-test" ] && [ "$(dirname "$PROFIL")" = "$E/gui-test" ] && chmod -R u+rwX "$PROFIL" 2>/dev/null && rm -rf "$PROFIL"
 mkdir -p "$PROFIL/data/applications" "$PROFIL/config/querencia" "$E/nachweis/gui" "$E/laufzeit"
-cp "$E/data/org.querencia.Dateisuche.desktop" "$PROFIL/data/applications/"
 cp -r "$E/data/icons" "$PROFIL/data/icons"
 # Testöffner: die „Standardanwendung“ für Text und Ordner im Profil
 # schreibt nur den übergebenen Pfad in ein Protokoll (beweist GIO-Start).
@@ -31,6 +30,11 @@ X
 ART=${2:-release}
 BIN=$E/target/$ART/querencia-dateisuche
 [ -x "$BIN" ] || { echo "Binary fehlt: $BIN" >&2; exit 2; }
+# Starter im Profil mit absolutem Exec/TryExec auf das Testbinary (ein
+# relatives TryExec außerhalb des PATH blendet GIO den Eintrag aus).
+sed -e "s|^Exec=querencia-dateisuche|Exec=$BIN|" -e "s|^TryExec=querencia-dateisuche|TryExec=$BIN|" \
+    "$E/data/org.querencia.Dateisuche.desktop" >"$PROFIL/data/applications/org.querencia.Dateisuche.desktop"
+update-desktop-database "$PROFIL/data/applications" 2>/dev/null || true
 cat >"$PROFIL/env.sh" <<X
 BIN=$BIN
 Q=$E/werkzeug/bin/qeingabe
