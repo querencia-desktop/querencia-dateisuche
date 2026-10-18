@@ -184,8 +184,9 @@ q "move 712 162" "click" "wait 2000"; shot 15a-ordnerdialog
 q "key Escape" "wait 1000"
 grep -q '^ORDNERWAHL' "$QD_PROTOKOLL" && nok "T15 Escape wählte" || ok "T15 Ordnerdialog mit Escape abgebrochen"
 # Ordner über die Pfadzeile (Strg+L) wählen; Dialoglage ist nicht fest.
-q "move 712 162" "click" "wait 2000" "chord ctrl l" "wait 400" "type $D/unter/" "wait 600" "key Return" "wait 1000"; shot 15b-ordnerdialog-unter
-q "key Return" "wait 800" "chord alt a" "wait 1200"; shot 15c-ordner-unter
+# (Return in der Pfadzeile wählt den Ordner; danach hat der Ordnerknopf den
+# Fokus – ein weiteres Return würde den Dialog erneut öffnen.)
+q "move 712 162" "click" "wait 2000" "chord ctrl l" "wait 400" "type $D/unter/" "wait 600" "key Return" "wait 1500"; shot 15b-ordner-unter
 grep -q "^ORDNERWAHL $D/unter$" "$QD_PROTOKOLL" && ok "T15b Ordner „unter“ gewählt" || nok "T15b: $(grep ORDNERWAHL "$QD_PROTOKOLL")"
 suche notiz
 [ "$(treffer)" = "notiz2.txt" ] && ok "T15c Suche im gewählten Ordner: nur notiz2.txt" || nok "T15c: $(treffer)"
