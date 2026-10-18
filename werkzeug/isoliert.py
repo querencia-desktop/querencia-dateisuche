@@ -122,6 +122,11 @@ def main() -> int:
         except (OSError, ProcessLookupError):
             pass
     time.sleep(1)
+    # Dokumentportal (FUSE unter $XDG_RUNTIME_DIR/doc) aushängen, sonst bleibt
+    # ein toter Einhängepunkt („Transport endpoint is not connected“).
+    doc = os.path.join(runtime, "doc")
+    if os.path.ismount(doc) or os.path.isdir(doc):
+        subprocess.run(["fusermount3", "-u", "-z", doc], stderr=subprocess.DEVNULL, check=False)
     shutil.rmtree(runtime, ignore_errors=True)
     for pid in SESSION_LABWC_PIDS:
         assert os.path.exists(f"/proc/{pid}"), "Sitzungs-labwc verschwunden!"

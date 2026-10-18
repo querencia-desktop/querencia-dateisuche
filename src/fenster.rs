@@ -23,6 +23,12 @@ const CSS: &str = include_str!("style.css");
 /// Eine Aktion des Kontextmenüs.
 type Aktion = fn(&Rc<Fenster>);
 
+thread_local! {
+    /// Offene Fenster: hält die `Rc`s am Leben, solange das GTK-Fenster
+    /// besteht (alle Signal-Handler halten nur schwache Verweise).
+    static OFFEN: RefCell<Vec<Rc<Fenster>>> = const { RefCell::new(Vec::new()) };
+}
+
 /// Größeneinheiten für „Größe mindestens/höchstens“.
 const EINHEITEN: [(&str, u64); 4] = [
     ("Byte", 1),
@@ -116,6 +122,8 @@ pub struct Fenster {
     suchen_label: gtk::Label,
     kontextmenue: gtk::PopoverMenu,
     lauf: RefCell<Option<Lauf>>,
+    /// Nach „Stopp“: noch wartende Treffer nicht mehr anzeigen.
+    verwerfen: Cell<bool>,
     abholer: RefCell<Option<glib::SourceId>>,
     puls: RefCell<Option<glib::SourceId>>,
     text_max_mb: Cell<u32>,
@@ -322,6 +330,7 @@ impl Fenster {
             suchen_label,
             kontextmenue,
             lauf: RefCell::new(None),
+            verwerfen: Cell::new(false),
             abholer: RefCell::new(None),
             puls: RefCell::new(None),
             text_max_mb: Cell::new(konfig.text_max_mb),
@@ -424,6 +433,7 @@ impl Fenster {
             glib::Propagation::Proceed
         });
         f.name.grab_focus();
+        OFFEN.with(|o| o.borrow_mut().push(f.clone()));
         f
     }
 
@@ -458,10 +468,14 @@ impl Fenster {
             // Rechtsklick: Zeile wählen, Kontextmenü am Zeiger
             let geste = gtk::GestureClick::new();
             geste.set_button(3);
+            // Vor der Zeilenauswahl der Liste (Capture), sonst kommt der
+            // Rechtsklick nie bei der Zelle an.
+            geste.set_propagation_phase(gtk::PropagationPhase::Capture);
             let item_w = item.downgrade();
             let w = w.clone();
             geste.connect_pressed(move |g, _, x, y| {
                 if let (Some(f), Some(item)) = (w.upgrade(), item_w.upgrade()) {
+                    g.set_state(gtk::EventSequenceState::Claimed);
                     f.modell.set_selected(item.position());
                     let punkt = g
                         .widget()
@@ -692,18 +706,17 @@ impl Fenster {
     }
 
     fn ordner_waehlen(self: &Rc<Self>) {
-        let dialog = gtk::FileDialog::new();
-        dialog.set_title("Ordner auswählen");
-        dialog.set_modal(true);
-        dialog.set_initial_folder(Some(&gio::File::for_path(&*self.ordner.borrow())));
         let w = Rc::downgrade(self);
-        dialog.select_folder(
-            Some(&self.window),
-            None::<&gio::Cancellable>,
-            move |ergebnis| {
-                if let (Some(f), Ok(datei)) = (w.upgrade(), ergebnis)
-                    && let Some(pfad) = datei.path()
-                {
+        let start = self.ordner.borrow().clone();
+        dialoge::datei_dialog(
+            &self.window,
+            "Ordner auswählen",
+            gtk::FileChooserAction::SelectFolder,
+            "_Auswählen",
+            &start,
+            None,
+            move |datei| {
+                if let (Some(f), Some(pfad)) = (w.upgrade(), datei.path()) {
                     protokoll::schreiben(&format!("ORDNERWAHL {}", pfad.display()));
                     f.ordner_setzen(pfad);
                 }
@@ -737,6 +750,7 @@ impl Fenster {
             Err(e) => dialoge::error(&self.window, "Die Suche kann nicht gestartet werden.", &e),
             Ok(lauf) => {
                 self.store.remove_all();
+                self.verwerfen.set(false);
                 *self.lauf.borrow_mut() = Some(lauf);
                 self.suchen_bild.set_icon_name(Some("process-stop"));
                 self.suchen_label.set_text_with_mnemonic("S_topp");
@@ -766,21 +780,35 @@ impl Fenster {
     fn stoppen(&self) {
         if let Some(l) = &*self.lauf.borrow() {
             l.stoppen();
+            self.verwerfen.set(true);
             self.status_setzen("Suche wird angehalten …");
         }
     }
 
+    /// Je Takt höchstens so viele Treffer in die Liste (ein `splice`, ein
+    /// Signal), damit Eingaben und Stopp nicht hinter der Liste warten.
+    const JE_TAKT: usize = 2000;
+
     fn abholen(self: &Rc<Self>) -> glib::ControlFlow {
+        let verwerfen = self.verwerfen.get();
         let meldungen = match &*self.lauf.borrow() {
-            Some(l) => l.abholen(),
+            Some(l) => l.abholen(if verwerfen { usize::MAX } else { Self::JE_TAKT }),
             None => return glib::ControlFlow::Break,
         };
         let mut fertig = None;
+        let mut neue: Vec<Treffer> = Vec::new();
         for m in meldungen {
             match m {
-                Meldung::Treffer(fund) => self.store.append(&Treffer::neu(&fund)),
+                Meldung::Treffer(fund) => {
+                    if !verwerfen {
+                        neue.push(Treffer::neu(&fund));
+                    }
+                }
                 Meldung::Fertig(a) => fertig = Some(a),
             }
+        }
+        if !neue.is_empty() {
+            self.store.splice(self.store.n_items(), 0, &neue);
         }
         match fertig {
             Some(a) => {
@@ -788,10 +816,12 @@ impl Fenster {
                 glib::ControlFlow::Break
             }
             None => {
-                self.status_setzen(&format!(
-                    "Suche läuft … {}",
-                    format::gefunden(self.store.n_items() as usize)
-                ));
+                if !verwerfen {
+                    self.status_setzen(&format!(
+                        "Suche läuft … {}",
+                        format::gefunden(self.store.n_items() as usize)
+                    ));
+                }
                 glib::ControlFlow::Continue
             }
         }
@@ -859,6 +889,11 @@ impl Fenster {
         if let Err(e) = k.speichern() {
             eprintln!("querencia-dateisuche: Einstellungen nicht gespeichert: {e}");
         }
+        let w = self.window.clone();
+        // Erst nach dem Schließen freigeben, nicht aus dem Handler heraus.
+        glib::idle_add_local_once(move || {
+            OFFEN.with(|o| o.borrow_mut().retain(|f| f.window != w));
+        });
     }
 
     // --------------------------------------------------------- Ergebnisse
@@ -988,20 +1023,17 @@ impl Fenster {
 
     /// Alle Pfade in Listenreihenfolge als Textdatei.
     fn speichern(self: &Rc<Self>) {
-        let dialog = gtk::FileDialog::new();
-        dialog.set_title("Ergebnisse speichern als");
-        dialog.set_modal(true);
-        dialog.set_initial_name(Some("suchergebnisse.txt"));
-        dialog.set_initial_folder(Some(&gio::File::for_path(glib::home_dir())));
         let w = Rc::downgrade(self);
-        dialog.save(
-            Some(&self.window),
-            None::<&gio::Cancellable>,
-            move |ergebnis| {
-                let (Some(f), Ok(datei)) = (w.upgrade(), ergebnis) else {
-                    return;
-                };
-                let Some(pfad) = datei.path() else {
+        let start = self.ordner.borrow().clone();
+        dialoge::datei_dialog(
+            &self.window,
+            "Ergebnisse speichern als",
+            gtk::FileChooserAction::Save,
+            "_Speichern",
+            &start,
+            Some("suchergebnisse.txt"),
+            move |datei| {
+                let (Some(f), Some(pfad)) = (w.upgrade(), datei.path()) else {
                     return;
                 };
                 let mut text = String::new();

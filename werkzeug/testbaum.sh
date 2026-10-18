@@ -22,6 +22,9 @@ printf 'querencia alt\n' >"$D/alt.txt"; touch -d '45 days ago' "$D/alt.txt"
 printf 'ohne leserecht querencia\n' >"$D/unlesbar.txt"; chmod 000 "$D/unlesbar.txt"
 printf 'drin\n' >"$D/gesperrt/drin.txt"; chmod 000 "$D/gesperrt"
 ln -s "$D" "$D/unter/schleife"
+# Zwölf Verknüpfungen auf „viele“: mit „Verknüpfungen folgen“ wird der Baum
+# zwölfmal zusätzlich gelesen (Stopp-Test), ohne zusätzlichen Platz.
+for i in $(seq -w 1 12); do ln -s "$D/viele" "$D/viele-$i"; done
 ln -s "$D/notiz.txt" "$D/unter/verknuepfung.txt"
 python3 -I - "$D/viele" <<'PY'
 import os, sys

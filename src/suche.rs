@@ -56,11 +56,16 @@ impl Lauf {
         self.stopp.store(true, Ordering::Relaxed);
     }
 
-    /// Alle bisher eingetroffenen Meldungen, ohne zu warten.
-    pub fn abholen(&self) -> Vec<Meldung> {
+    /// Bis zu `hoechstens` eingetroffene Meldungen, ohne zu warten; der
+    /// Rest bleibt im Kanal (hält das Fenster bei Hunderttausenden
+    /// Treffern bedienbar).
+    pub fn abholen(&self, hoechstens: usize) -> Vec<Meldung> {
         let mut aus = Vec::new();
-        while let Ok(m) = self.empfaenger.try_recv() {
-            aus.push(m);
+        while aus.len() < hoechstens {
+            match self.empfaenger.try_recv() {
+                Ok(m) => aus.push(m),
+                Err(_) => break,
+            }
         }
         aus
     }
@@ -148,7 +153,12 @@ fn durchlaufen(anfrage: Anfrage, filter: Filter, stopp: Arc<AtomicBool>, sender:
             continue;
         }
         if filter.braucht_inhalt() {
-            if werte.ist_ordner {
+            // Nur reguläre Dateien lesen (auch über eine Verknüpfung); Ordner,
+            // Geräte, FIFOs und Sockets würden fehlschlagen oder blockieren.
+            let regulaer = md.is_file()
+                || (md.file_type().is_symlink()
+                    && std::fs::metadata(eintrag.path()).is_ok_and(|m| m.is_file()));
+            if !regulaer {
                 continue;
             }
             match filter.passt_inhalt(eintrag.path(), werte.groesse) {

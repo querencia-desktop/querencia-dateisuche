@@ -63,7 +63,15 @@ impl Konfig {
                 .boolean("Optionen", "WeitereSichtbar")
                 .unwrap_or(v.weitere_sichtbar),
             kriterien: (1..=200)
-                .map_while(|i| kf.string("Kriterien", &i.to_string()).ok())
+                .map(|i| i.to_string())
+                .take_while(|k| kf.has_key("Kriterien", k).unwrap_or(false))
+                .filter_map(|k| {
+                    // Entschärfte Form (set_string); unlesbare Escape-Folgen
+                    // (z. B. handgeschriebenes `\.` in einem Regex) roh lesen.
+                    kf.string("Kriterien", &k)
+                        .or_else(|_| kf.value("Kriterien", &k))
+                        .ok()
+                })
                 .filter_map(|s| Kriterium::aus_text(&s))
                 .collect(),
             text_max_mb: kf
@@ -162,5 +170,19 @@ mod tests {
         assert_eq!(k.breite, Konfig::default().breite);
         assert_eq!(k.kriterien, vec![Kriterium::DateiIstLeer]);
         assert_eq!(k.text_max_mb, 10);
+        // Handgeschriebener Regex mit Backslash (ungültige Escape-Folge für GKeyFile)
+        kf.load_from_data(
+            "[Kriterien]\n1=regex=^a\\.txt$\n2=leer\n",
+            glib::KeyFileFlags::NONE,
+        )
+        .unwrap();
+        let k = Konfig::aus_keyfile(&kf);
+        assert_eq!(
+            k.kriterien,
+            vec![
+                Kriterium::NameRegex("^a\\.txt$".into()),
+                Kriterium::DateiIstLeer
+            ]
+        );
     }
 }

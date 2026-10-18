@@ -213,6 +213,60 @@ pub fn frage(
     cancel.grab_focus();
 }
 
+/// Ordner- oder Speicherdialog im eigenen Prozess, klassisch mit Knopfleiste
+/// (Titelleiste von labwc, deutsche Knöpfe) – wie Querencia Screenshot
+/// 0.2.3 (QREL-04b): `gtk::FileDialog` ginge über das Portal, dessen
+/// Fenster unter labwc keinen Tastaturfokus bekommt. GtkFileChooserDialog
+/// ist seit GTK 4.10 als veraltet markiert, in GTK 4.22 vorhanden.
+#[allow(deprecated)]
+pub fn datei_dialog(
+    parent: &impl IsA<gtk::Window>,
+    titel: &str,
+    aktion: gtk::FileChooserAction,
+    bestaetigen: &str,
+    startordner: &std::path::Path,
+    vorgabe_name: Option<&str>,
+    gewaehlt: impl Fn(gio::File) + 'static,
+) {
+    use gtk::prelude::{DialogExt as _, FileChooserExt as _};
+    let chooser = gtk::FileChooserDialog::builder()
+        .title(titel)
+        .transient_for(parent)
+        .modal(true)
+        .use_header_bar(0)
+        .action(aktion)
+        .default_width(760)
+        .default_height(500)
+        .destroy_with_parent(true)
+        .build();
+    chooser.add_button("_Abbrechen", gtk::ResponseType::Cancel);
+    chooser.add_button(bestaetigen, gtk::ResponseType::Accept);
+    chooser.set_default_response(gtk::ResponseType::Accept);
+    chooser.add_css_class("qd-dialog");
+    attach_to_app(chooser.upcast_ref(), parent);
+    let start = startordner
+        .ancestors()
+        .find(|p| p.is_dir())
+        .map(std::path::Path::to_path_buf)
+        .unwrap_or_else(glib::home_dir);
+    if let Err(e) = chooser.set_current_folder(Some(&gio::File::for_path(&start))) {
+        eprintln!("querencia-dateisuche: Startordner {}: {e}", start.display());
+    }
+    if let Some(n) = vorgabe_name {
+        chooser.set_current_name(n);
+    }
+    chooser.connect_response(move |chooser, antwort| {
+        let wahl = (antwort == gtk::ResponseType::Accept)
+            .then(|| chooser.file())
+            .flatten();
+        chooser.destroy();
+        if let Some(f) = wahl {
+            gewaehlt(f);
+        }
+    });
+    chooser.present();
+}
+
 const LOGO_64: &[u8] = include_bytes!("../data/logo/querencia-logo-64.png");
 
 /// „Info“: offizielles Querencia-Logo C2, Name, Version, Lizenz.
@@ -288,7 +342,6 @@ pub fn hilfe(parent: &impl IsA<gtk::Window>) {
     text.set_wrap(true);
     text.set_max_width_chars(70);
     text.set_xalign(0.0);
-    text.set_selectable(true);
     let info = gtk::Button::with_mnemonic("_Info");
     let close = schliess_knopf(&window);
     window.set_child(Some(&content(&text, &button_row(&[&info, &close]))));

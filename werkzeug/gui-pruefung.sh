@@ -17,10 +17,11 @@ cat >"$PROFIL/data/applications/qd-testoeffner.desktop" <<X
 [Desktop Entry]
 Type=Application
 Name=Testöffner
-Exec=/bin/sh -c 'printf "GEOEFFNET %s\\n" "\$1" >> "$PROFIL/oeffner.log"' sh %f
+Exec=/bin/sh -c 'echo "GEOEFFNET \$1" >> "$PROFIL/oeffner.log"' sh %f
 NoDisplay=true
 MimeType=text/plain;inode/directory;text/markdown;
 X
+update-desktop-database "$PROFIL/data/applications" 2>/dev/null || true
 cat >"$PROFIL/config/mimeapps.list" <<X
 [Default Applications]
 text/plain=qd-testoeffner.desktop
