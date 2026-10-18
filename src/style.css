@@ -1,0 +1,52 @@
+/* Querencia Dateisuche – klassische Optik (Ambiance-Farbwerte wie Panel,
+   Files und Editor; keine Bilder oder Theme-Dateien übernommen). */
+
+window.qd-window popover.menu contents {
+  border-radius: 0;
+  padding: 2px 0;
+  background-color: #f5f4f2;
+  border: 1px solid #c7c2be;
+}
+
+window.qd-window popover.menu modelbutton {
+  border-radius: 0;
+  padding: 3px 16px;
+}
+
+window.qd-window popover.menu modelbutton:hover,
+window.qd-window popover.menu modelbutton:selected {
+  background-image: linear-gradient(to bottom, #f6a179, #f07746);
+  color: #ffffff;
+}
+
+window.qd-window columnview > header > button {
+  background-image: linear-gradient(to bottom, #fbfaf9, #ecebe9);
+  border-right: 1px solid #c7c2be;
+  border-bottom: 1px solid #c7c2be;
+  border-radius: 0;
+  padding: 2px 6px;
+  color: #3c3c3c;
+}
+
+window.qd-window columnview > listview > row:selected {
+  background-image: linear-gradient(to bottom, #f6a179, #f07746);
+  color: #ffffff;
+}
+
+window.qd-window columnview > listview > row:selected label {
+  color: #ffffff;
+}
+
+window.qd-window label.qd-status {
+  color: #3c3c3c;
+}
+
+window.qd-window button.qd-knopf,
+window.qd-dialog button {
+  border-radius: 2px;
+  min-width: 80px;
+}
+
+window.qd-window progressbar trough {
+  min-height: 10px;
+}

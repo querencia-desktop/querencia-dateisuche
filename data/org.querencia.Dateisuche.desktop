@@ -1,0 +1,22 @@
+[Desktop Entry]
+# Querencia Dateisuche (Prototyp). Desktop-ID = GApplication-ID
+# org.querencia.Dateisuche, damit labwc und die Fensterliste Symbol und
+# Namen finden. Categories ohne System;: das Panel sortiert Utility nach
+# „Zubehör“ (apps.rs, RULES); GNOME 2 zeigte den Eintrag unter „Orte“.
+Type=Application
+Version=1.5
+Name=Nach Dateien suchen …
+Name[de]=Nach Dateien suchen …
+GenericName=File Search
+GenericName[de]=Dateisuche
+Comment=Dateien nach Name, Inhalt, Datum und Größe suchen
+Comment[de]=Dateien nach Name, Inhalt, Datum und Größe suchen
+Exec=querencia-dateisuche
+TryExec=querencia-dateisuche
+Icon=org.querencia.Dateisuche
+Terminal=false
+Categories=GTK;Utility;FileTools;
+Keywords=search;find;files;
+Keywords[de]=Suchen;Finden;Dateien;Dateisuche;
+StartupNotify=true
+StartupWMClass=org.querencia.Dateisuche

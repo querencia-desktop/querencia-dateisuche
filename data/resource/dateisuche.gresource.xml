@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Eingebettete Ressourcen. Neu erzeugen: werkzeug/ressourcen.sh -->
+<gresources>
+  <gresource prefix="/org/querencia/Dateisuche">
+    <file>icons/scalable/apps/org.querencia.Dateisuche-fenster.svg</file>
+  </gresource>
+</gresources>

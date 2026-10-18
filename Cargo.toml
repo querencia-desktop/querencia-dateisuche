@@ -1,0 +1,25 @@
+[package]
+name = "querencia-dateisuche"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92"
+description = "Querencia Dateisuche: „Nach Dateien suchen …“ für Querencia Desktop, ohne Indexdienst (Prototyp)"
+license = "GPL-3.0-or-later"
+publish = false
+
+[dependencies]
+# Dieselben Bindings wie die übrigen Querencia-Programme (gtk-rs 0.11).
+gtk = { package = "gtk4", version = "0.11", features = ["v4_12"] }
+# Verzeichnislauf mit Schleifenschutz (same-file) und Dateisystemgrenze.
+walkdir = "2.5"
+# Namensmuster (* und ?) und „Name entspricht regulärem Ausdruck“,
+# Textsuche in Dateiinhalten (regex::bytes, Groß/Klein ignoriert).
+regex = "1.12"
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[lints.rust]
+unsafe_code = "forbid"
+unused_must_use = "deny"
