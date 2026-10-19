@@ -5,7 +5,7 @@
 set -u
 . "$HMP04_PROFILE/env.sh"
 . "$(dirname "$0")/eingabe.sh"
-PANEL=~/opt/querencia/bin/querencia-panel
+PANEL=${QUERENCIA_PANEL:-$HOME/opt/querencia/bin/querencia-panel}
 "$PANEL" >"$OUT/symbol-panel.log" 2>&1 & PP=$!
 sleep 3
 "$BIN" --ordner "$D" >"$OUT/symbol-app.log" 2>&1 & AP=$!
