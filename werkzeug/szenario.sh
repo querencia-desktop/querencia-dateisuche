@@ -176,8 +176,8 @@ q "key Return" "wait 1500"
 if [ -f "$D/suchergebnisse.txt" ] && [ "$(head -1 "$D/suchergebnisse.txt")" = "$D/unter/notiz2.txt" ] && [ "$(wc -l <"$D/suchergebnisse.txt")" = 2 ]; then ok "T14 Sortierung nach Größe und „Ergebnisse speichern“: notiz2.txt (11 Byte) zuerst"; else nok "T14 Speichern: $(cat "$D/suchergebnisse.txt" 2>&1)"; fi
 q "move 682 266" "click" "wait 400"; kontext 297 240; q "wait 1500" "key Return" "wait 1200"
 shot 14c-ueberschreiben
-q "chord alt r" "wait 1000"
-[ "$(head -1 "$D/suchergebnisse.txt")" = "$D/notiz.txt" ] && ok "T14b absteigend sortiert, Überschreiben bestätigt (GTK-Dialog, englisch: _Replace)" || nok "T14b: $(head -1 "$D/suchergebnisse.txt" 2>&1)"
+q "chord alt e" "wait 1000"
+[ "$(head -1 "$D/suchergebnisse.txt")" = "$D/notiz.txt" ] && ok "T14b absteigend sortiert, Überschreiben bestätigt (GTK-Dialog, deutsch: _Ersetzen)" || nok "T14b: $(head -1 "$D/suchergebnisse.txt" 2>&1)"
 
 # T15 Ordnerdialog: Abbrechen, dann Ordner „unter“ wählen
 q "move 712 162" "click" "wait 2000"; shot 15a-ordnerdialog
