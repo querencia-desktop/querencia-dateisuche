@@ -672,10 +672,10 @@ mod tests {
 
     #[test]
     fn id_tabelle() {
-        let passwd = "root:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000::/home/user:/bin/bash\n";
-        assert_eq!(id_aus_tabelle(passwd, "user"), Some(1000));
-        assert_eq!(id_aus_tabelle(passwd, "root"), Some(0));
-        assert_eq!(id_aus_tabelle(passwd, "use"), None);
+        let tabelle = "root:x:0:0:root:/root:/bin/bash\nuser:x:1000:1000::/home/user:/bin/bash\n";
+        assert_eq!(id_aus_tabelle(tabelle, "user"), Some(1000));
+        assert_eq!(id_aus_tabelle(tabelle, "root"), Some(0));
+        assert_eq!(id_aus_tabelle(tabelle, "use"), None);
     }
 
     #[test]
