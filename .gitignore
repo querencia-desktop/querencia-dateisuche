@@ -1,3 +1,7 @@
 /target
 /gui-test
 /laufzeit
+# Vorlage der Integration 0.1.2: Binary und Katalog nicht ins Repo
+/integration/vorschlag-012/querencia-dateisuche
+/integration/vorschlag-012/share/
+__pycache__/

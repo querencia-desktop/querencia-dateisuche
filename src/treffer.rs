@@ -9,6 +9,7 @@ use gtk::glib;
 use gtk::glib::prelude::*;
 use gtk::glib::subclass::prelude::*;
 
+use crate::i18n::gettext;
 use crate::suche::Fund;
 
 mod imp {
@@ -62,7 +63,7 @@ impl Treffer {
             .map(|p| p.display().to_string())
             .unwrap_or_default();
         let (mime, typ) = if fund.ist_ordner {
-            ("inode/directory".to_string(), "Ordner".to_string())
+            ("inode/directory".to_string(), gettext("Folder"))
         } else {
             let (mime, _unsicher) = gio::content_type_guess(Some(&fund.pfad), None);
             let typ = gio::content_type_get_description(&mime).to_string();
@@ -113,7 +114,7 @@ mod tests {
             groesse: 0,
             geaendert: 0,
         });
-        assert_eq!(o.typ(), "Ordner");
+        assert_eq!(o.typ(), "Folder");
         assert_eq!(o.mime(), "inode/directory");
     }
 }

@@ -12,11 +12,12 @@ use std::time::Duration;
 use gtk::prelude::*;
 use gtk::{gdk, gio, glib, graphene};
 
+use crate::i18n::{gettext, gettext_f, pgettext};
 use crate::konfig::Konfig;
 use crate::kriterien::{Anfrage, Art, Eingabe, Kriterium};
 use crate::suche::{self, Abschluss, Lauf, Meldung};
 use crate::treffer::Treffer;
-use crate::{Aufruf, FENSTERTITEL, dialoge, format, protokoll};
+use crate::{Aufruf, dialoge, fenstertitel, format, protokoll};
 
 const CSS: &str = include_str!("style.css");
 
@@ -147,7 +148,7 @@ fn ausdruck(eigenschaft: &str) -> gtk::PropertyExpression {
 }
 
 fn menue_modell() -> gio::Menu {
-    fn abschnitt(eintraege: &[(&str, &str)]) -> gio::Menu {
+    fn abschnitt(eintraege: &[(String, &str)]) -> gio::Menu {
         let m = gio::Menu::new();
         for (label, aktion) in eintraege {
             m.append(Some(label), Some(aktion));
@@ -157,25 +158,26 @@ fn menue_modell() -> gio::Menu {
     let menu = gio::Menu::new();
     menu.append_section(
         None,
+        // TRANSLATORS: Kontextmenü der Ergebnisliste; Zugriffstasten verschieden halten.
         &abschnitt(&[
-            ("Ö_ffnen", "win.oeffnen"),
-            ("Öffnen _mit …", "win.oeffnen-mit"),
+            (gettext("_Open"), "win.oeffnen"),
+            (gettext("Open _With…"), "win.oeffnen-mit"),
         ]),
     );
     menu.append_section(
         None,
         &abschnitt(&[
-            ("Enthaltenden _Ordner öffnen", "win.ordner-oeffnen"),
-            ("Pfad in die _Zwischenablage kopieren", "win.pfad-kopieren"),
+            (gettext("Open Containing _Folder"), "win.ordner-oeffnen"),
+            (gettext("_Copy Path to Clipboard"), "win.pfad-kopieren"),
         ]),
     );
     menu.append_section(
         None,
-        &abschnitt(&[("In den _Papierkorb verschieben …", "win.papierkorb")]),
+        &abschnitt(&[(gettext("Move to _Trash…"), "win.papierkorb")]),
     );
     menu.append_section(
         None,
-        &abschnitt(&[("Ergebnisse _speichern als …", "win.speichern")]),
+        &abschnitt(&[(gettext("_Save Results As…"), "win.speichern")]),
     );
     menu
 }
@@ -185,7 +187,7 @@ impl Fenster {
         let konfig = Konfig::laden();
         let window = gtk::ApplicationWindow::builder()
             .application(app)
-            .title(FENSTERTITEL)
+            .title(fenstertitel())
             .default_width(konfig.breite)
             .default_height(konfig.hoehe)
             .build();
@@ -196,13 +198,15 @@ impl Fenster {
         let gitter = gtk::Grid::new();
         gitter.set_row_spacing(6);
         gitter.set_column_spacing(12);
-        let name_label = gtk::Label::with_mnemonic("_Name enthält:");
+        // TRANSLATORS: Hauptfenster wie gnome-search-tool 2.x; Zugriffstasten
+        // im Fenster verschieden halten.
+        let name_label = gtk::Label::with_mnemonic(&gettext("_Name contains:"));
         name_label.set_xalign(1.0);
         let name = gtk::Entry::new();
         name.set_hexpand(true);
-        name.set_placeholder_text(Some("z. B. bericht oder *.txt"));
+        name.set_placeholder_text(Some(&gettext("e.g. report or *.txt")));
         name_label.set_mnemonic_widget(Some(&name));
-        let ordner_text = gtk::Label::with_mnemonic("Suchen in _Ordner:");
+        let ordner_text = gtk::Label::with_mnemonic(&gettext("_Look in folder:"));
         ordner_text.set_xalign(1.0);
         let ordner_knopf = gtk::Button::new();
         ordner_knopf.set_hexpand(true);
@@ -217,7 +221,7 @@ impl Fenster {
         ordner_inhalt.append(&ordner_label);
         ordner_inhalt.append(&ordner_pfeil);
         ordner_knopf.set_child(Some(&ordner_inhalt));
-        ordner_knopf.set_tooltip_text(Some("Ordner auswählen …"));
+        ordner_knopf.set_tooltip_text(Some(&gettext("Choose a folder…")));
         ordner_text.set_mnemonic_widget(Some(&ordner_knopf));
         gitter.attach(&name_label, 0, 0, 1, 1);
         gitter.attach(&name, 1, 0, 1, 1);
@@ -225,19 +229,20 @@ impl Fenster {
         gitter.attach(&ordner_knopf, 1, 1, 1, 1);
 
         // Weitere Optionen
-        let expander = gtk::Expander::with_mnemonic("_Weitere Optionen auswählen");
+        let expander = gtk::Expander::with_mnemonic(&gettext("Select more _options"));
         expander.set_expanded(konfig.weitere_sichtbar);
         let optionen = gtk::Box::new(gtk::Orientation::Vertical, 6);
         optionen.set_margin_start(18);
         optionen.set_margin_top(6);
         let zeilen_box = gtk::Box::new(gtk::Orientation::Vertical, 6);
         let auswahl_zeile = gtk::Box::new(gtk::Orientation::Horizontal, 6);
-        let auswahl_text = gtk::Label::with_mnemonic("_Verfügbare Optionen:");
-        let namen: Vec<&str> = Art::ALLE.iter().map(|a| a.bezeichnung()).collect();
+        let auswahl_text = gtk::Label::with_mnemonic(&gettext("A_vailable options:"));
+        let namen: Vec<String> = Art::ALLE.iter().map(|a| a.bezeichnung()).collect();
+        let namen: Vec<&str> = namen.iter().map(String::as_str).collect();
         let auswahl = gtk::DropDown::from_strings(&namen);
         auswahl.set_hexpand(true);
         auswahl_text.set_mnemonic_widget(Some(&auswahl));
-        let (hinzufuegen, _, _) = knopf("list-add", "Hin_zufügen");
+        let (hinzufuegen, _, _) = knopf("list-add", &gettext("_Add"));
         auswahl_zeile.append(&auswahl_text);
         auswahl_zeile.append(&auswahl);
         auswahl_zeile.append(&hinzufuegen);
@@ -246,7 +251,7 @@ impl Fenster {
         expander.set_child(Some(&optionen));
 
         // Ergebnisse
-        let ergebnis_text = gtk::Label::with_mnemonic("S_uchergebnisse:");
+        let ergebnis_text = gtk::Label::with_mnemonic(&gettext("S_earch results:"));
         ergebnis_text.set_xalign(0.0);
         let liste = gtk::ColumnView::new(None::<gtk::SingleSelection>);
         liste.set_show_row_separators(false);
@@ -281,9 +286,10 @@ impl Fenster {
         statuszeile.append(&fortschritt);
 
         // Knöpfe
-        let (hilfe, _, _) = knopf("help-browser", "_Hilfe");
-        let (schliessen, _, _) = knopf("window-close", "S_chließen");
-        let (suchen_knopf, suchen_bild, suchen_label) = knopf("edit-find", "_Suchen");
+        let (hilfe, _, _) = knopf("help-browser", &gettext("_Help"));
+        // TRANSLATORS: im Deutschen „S_chließen“ (S gehört „_Suchen“).
+        let (schliessen, _, _) = knopf("window-close", &pgettext("main window", "_Close"));
+        let (suchen_knopf, suchen_bild, suchen_label) = knopf("edit-find", &gettext("_Find"));
         suchen_knopf.add_css_class("suggested-action");
         let knoepfe = gtk::Box::new(gtk::Orientation::Horizontal, 6);
         knoepfe.set_halign(gtk::Align::End);
@@ -512,15 +518,21 @@ impl Fenster {
     }
 
     fn spalten_anlegen(self: &Rc<Self>) {
-        let name = gtk::ColumnViewColumn::new(Some("Name"), Some(self.fabrik(true, |t| t.name())));
+        // TRANSLATORS: Spaltenköpfe der Ergebnisliste.
+        let name = gtk::ColumnViewColumn::new(
+            Some(&gettext("Name")),
+            Some(self.fabrik(true, |t| t.name())),
+        );
         let s = gtk::StringSorter::new(Some(ausdruck("name")));
         s.set_ignore_case(true);
         name.set_sorter(Some(&s));
         name.set_expand(true);
         name.set_resizable(true);
 
-        let ordner =
-            gtk::ColumnViewColumn::new(Some("Ordner"), Some(self.fabrik(false, |t| t.ordner())));
+        let ordner = gtk::ColumnViewColumn::new(
+            Some(&gettext("Folder")),
+            Some(self.fabrik(false, |t| t.ordner())),
+        );
         let s = gtk::StringSorter::new(Some(ausdruck("ordner")));
         s.set_ignore_case(true);
         ordner.set_sorter(Some(&s));
@@ -528,7 +540,7 @@ impl Fenster {
         ordner.set_resizable(true);
 
         let groesse = gtk::ColumnViewColumn::new(
-            Some("Größe"),
+            Some(&gettext("Size")),
             Some(self.fabrik(false, |t| {
                 if t.ist_ordner() {
                     "–".to_string()
@@ -541,7 +553,10 @@ impl Fenster {
         groesse.set_fixed_width(90);
         groesse.set_resizable(true);
 
-        let typ = gtk::ColumnViewColumn::new(Some("Typ"), Some(self.fabrik(false, |t| t.typ())));
+        let typ = gtk::ColumnViewColumn::new(
+            Some(&gettext("Type")),
+            Some(self.fabrik(false, |t| t.typ())),
+        );
         let s = gtk::StringSorter::new(Some(ausdruck("typ")));
         s.set_ignore_case(true);
         typ.set_sorter(Some(&s));
@@ -549,7 +564,7 @@ impl Fenster {
         typ.set_resizable(true);
 
         let geaendert = gtk::ColumnViewColumn::new(
-            Some("Geändert"),
+            Some(&gettext("Date Modified")),
             Some(self.fabrik(false, |t| format::datum_unix(t.geaendert()))),
         );
         geaendert.set_sorter(Some(&gtk::NumericSorter::new(Some(ausdruck("geaendert")))));
@@ -589,9 +604,13 @@ impl Fenster {
             return;
         }
         let zeile = gtk::Box::new(gtk::Orientation::Horizontal, 6);
-        let label = gtk::Label::new(Some(&format!("{}:", art.bezeichnung())));
+        let label = gtk::Label::new(Some(&gettext_f(
+            // TRANSLATORS: Beschriftung einer gewählten Option mit Eingabefeld.
+            "{option}:",
+            &[("option", &art.bezeichnung())],
+        )));
         if art.eingabe() == Eingabe::Keine {
-            label.set_text(art.bezeichnung());
+            label.set_text(&art.bezeichnung());
         }
         label.set_xalign(0.0);
         zeile.append(&label);
@@ -627,13 +646,19 @@ impl Fenster {
                 };
                 s.set_value(f64::from(tage));
                 zeile.append(&s);
-                let nach = gtk::Label::new(Some(art.nachsatz()));
+                let nach = gtk::Label::new(Some(&art.nachsatz()));
                 zeile.append(&nach);
                 zahl = Some(s);
             }
             Eingabe::Groesse => {
                 let s = gtk::SpinButton::with_range(0.0, 1.0e9, 1.0);
-                let d = gtk::DropDown::from_strings(&EINHEITEN.map(|(n, _)| n));
+                // TRANSLATORS: kleinste Größeneinheit in der Auswahl (danach KB, MB, GB).
+                let byte = gettext("bytes");
+                let namen: Vec<&str> = EINHEITEN
+                    .iter()
+                    .map(|(n, _)| if *n == "Byte" { byte.as_str() } else { n })
+                    .collect();
+                let d = gtk::DropDown::from_strings(&namen);
                 let bytes = match wert {
                     Some(Kriterium::GroesseMindestens(n) | Kriterium::GroesseHoechstens(n)) => *n,
                     _ => match art.vorgabe() {
@@ -657,7 +682,7 @@ impl Fenster {
         fueller.set_hexpand(true);
         zeile.append(&fueller);
         let entfernen = gtk::Button::from_icon_name("list-remove");
-        entfernen.set_tooltip_text(Some("Diese Option entfernen"));
+        entfernen.set_tooltip_text(Some(&gettext("Remove this option")));
         entfernen.add_css_class("flat");
         zeile.append(&entfernen);
         self.zeilen_box.append(&zeile);
@@ -692,7 +717,7 @@ impl Fenster {
 
     fn ordner_setzen(&self, pfad: PathBuf) {
         let anzeige = if pfad == glib::home_dir() {
-            "Persönlicher Ordner".to_string()
+            gettext("Home Folder")
         } else {
             pfad.file_name()
                 .map(|n| n.to_string_lossy().into_owned())
@@ -710,9 +735,9 @@ impl Fenster {
         let start = self.ordner.borrow().clone();
         dialoge::datei_dialog(
             &self.window,
-            "Ordner auswählen",
+            &gettext("Choose a Folder"),
             gtk::FileChooserAction::SelectFolder,
-            "_Auswählen",
+            &gettext("_Select"),
             &start,
             None,
             move |datei| {
@@ -747,16 +772,17 @@ impl Fenster {
             .text_max_bytes(),
         };
         match suche::starten(anfrage) {
-            Err(e) => dialoge::error(&self.window, "Die Suche kann nicht gestartet werden.", &e),
+            Err(e) => dialoge::error(&self.window, &gettext("The search cannot be started."), &e),
             Ok(lauf) => {
                 self.store.remove_all();
                 self.verwerfen.set(false);
                 *self.lauf.borrow_mut() = Some(lauf);
                 self.suchen_bild.set_icon_name(Some("process-stop"));
-                self.suchen_label.set_text_with_mnemonic("S_topp");
+                // TRANSLATORS: Suchknopf während der Suche (im Deutschen „S_topp“).
+                self.suchen_label.set_text_with_mnemonic(&gettext("_Stop"));
                 self.suchen_knopf.remove_css_class("suggested-action");
                 self.fortschritt.set_visible(true);
-                self.status_setzen("Suche läuft …");
+                self.status_setzen(&gettext("Searching…"));
                 let fb = self.fortschritt.clone();
                 *self.puls.borrow_mut() = Some(glib::timeout_add_local(
                     Duration::from_millis(80),
@@ -781,7 +807,7 @@ impl Fenster {
         if let Some(l) = &*self.lauf.borrow() {
             l.stoppen();
             self.verwerfen.set(true);
-            self.status_setzen("Suche wird angehalten …");
+            self.status_setzen(&gettext("Stopping the search…"));
         }
     }
 
@@ -817,9 +843,9 @@ impl Fenster {
             }
             None => {
                 if !verwerfen {
-                    self.status_setzen(&format!(
-                        "Suche läuft … {}",
-                        format::gefunden(self.store.n_items() as usize)
+                    self.status_setzen(&gettext_f(
+                        "Searching… {status}",
+                        &[("status", &format::gefunden(self.store.n_items() as usize))],
                     ));
                 }
                 glib::ControlFlow::Continue
@@ -836,23 +862,31 @@ impl Fenster {
         self.fortschritt.set_visible(false);
         self.fortschritt.set_fraction(0.0);
         self.suchen_bild.set_icon_name(Some("edit-find"));
-        self.suchen_label.set_text_with_mnemonic("_Suchen");
+        self.suchen_label.set_text_with_mnemonic(&gettext("_Find"));
         self.suchen_knopf.add_css_class("suggested-action");
         let mut text = format::gefunden(self.store.n_items() as usize);
+        // TRANSLATORS: Zusätze der Statuszeile nach der Suche; {status} ist
+        // z. B. „12 files found“.
         if a.abgebrochen {
-            text.push_str(" (Suche abgebrochen)");
+            text = gettext_f("{status} (search stopped)", &[("status", &text)]);
         }
         if a.fehler > 0 {
-            text.push_str(&format!(
-                " · {} nicht lesbar (keine Berechtigung)",
-                format::tausender(a.fehler as usize)
-            ));
+            text = gettext_f(
+                "{status} · {count} not readable (no permission)",
+                &[
+                    ("status", &text),
+                    ("count", &format::tausender(a.fehler as usize)),
+                ],
+            );
         }
         if a.uebersprungen > 0 {
-            text.push_str(&format!(
-                " · {} übersprungen (binär oder zu groß)",
-                format::tausender(a.uebersprungen as usize)
-            ));
+            text = gettext_f(
+                "{status} · {count} skipped (binary or too large)",
+                &[
+                    ("status", &text),
+                    ("count", &format::tausender(a.uebersprungen as usize)),
+                ],
+            );
         }
         self.status_setzen(&text);
         protokoll::schreiben(&format!("FERTIG {text}"));
@@ -921,7 +955,7 @@ impl Fenster {
             Ok(()) => protokoll::schreiben(&format!("OEFFNEN {}", t.pfad())),
             Err(e) => dialoge::error(
                 &self.window,
-                &format!("„{}“ konnte nicht geöffnet werden.", t.name()),
+                &gettext_f("“{name}” could not be opened.", &[("name", &t.name())]),
                 e.message(),
             ),
         }
@@ -944,7 +978,10 @@ impl Fenster {
             Ok(()) => protokoll::schreiben(&format!("ORDNER {}", t.ordner())),
             Err(e) => dialoge::error(
                 &self.window,
-                &format!("Der Ordner „{}“ konnte nicht geöffnet werden.", t.ordner()),
+                &gettext_f(
+                    "The folder “{folder}” could not be opened.",
+                    &[("folder", &t.ordner())],
+                ),
                 e.message(),
             ),
         }
@@ -953,7 +990,7 @@ impl Fenster {
     fn pfad_kopieren(&self) {
         if let Some(t) = self.gewaehlt() {
             self.window.clipboard().set_text(&t.pfad());
-            self.status_setzen(&format!("Pfad kopiert: {}", t.pfad()));
+            self.status_setzen(&gettext_f("Path copied: {path}", &[("path", &t.pfad())]));
             protokoll::schreiben(&format!("KOPIERT {}", t.pfad()));
         }
     }
@@ -965,19 +1002,22 @@ impl Fenster {
             return;
         };
         let w = Rc::downgrade(self);
-        let was = if t.ist_ordner() {
-            "Der Ordner"
+        let erklaerung = if t.ist_ordner() {
+            gettext_f(
+                "The folder will be moved from “{folder}” to the trash and can be restored from there.",
+                &[("folder", &t.ordner())],
+            )
         } else {
-            "Die Datei"
+            gettext_f(
+                "The file will be moved from “{folder}” to the trash and can be restored from there.",
+                &[("folder", &t.ordner())],
+            )
         };
         dialoge::frage(
             &self.window,
-            &format!("„{}“ in den Papierkorb verschieben?", t.name()),
-            &format!(
-                "{was} wird aus „{}“ in den Papierkorb verschoben und kann von dort wiederhergestellt werden.",
-                t.ordner()
-            ),
-            "In den _Papierkorb verschieben",
+            &gettext_f("Move “{name}” to the trash?", &[("name", &t.name())]),
+            &erklaerung,
+            &gettext("Move to _Trash"),
             true,
             move |ja| {
                 let Some(f) = w.upgrade() else {
@@ -991,13 +1031,16 @@ impl Fenster {
                     Ok(()) => {
                         protokoll::schreiben(&format!("PAPIERKORB {}", t.pfad()));
                         f.entfernen(&t);
-                        f.status_setzen(&format!("„{}“ in den Papierkorb verschoben.", t.name()));
+                        f.status_setzen(&gettext_f(
+                            "“{name}” moved to the trash.",
+                            &[("name", &t.name())],
+                        ));
                     }
                     Err(e) => dialoge::error(
                         &f.window,
-                        &format!(
-                            "„{}“ konnte nicht in den Papierkorb verschoben werden.",
-                            t.name()
+                        &gettext_f(
+                            "“{name}” could not be moved to the trash.",
+                            &[("name", &t.name())],
                         ),
                         e.message(),
                     ),
@@ -1027,9 +1070,9 @@ impl Fenster {
         let start = self.ordner.borrow().clone();
         dialoge::datei_dialog(
             &self.window,
-            "Ergebnisse speichern als",
+            &gettext("Save Search Results As"),
             gtk::FileChooserAction::Save,
-            "_Speichern",
+            &gettext("_Save"),
             &start,
             Some("suchergebnisse.txt"),
             move |datei| {
@@ -1045,12 +1088,18 @@ impl Fenster {
                 }
                 match std::fs::write(&pfad, text) {
                     Ok(()) => {
-                        f.status_setzen(&format!("Ergebnisse gespeichert: {}", pfad.display()));
+                        f.status_setzen(&gettext_f(
+                            "Results saved: {path}",
+                            &[("path", &pfad.display().to_string())],
+                        ));
                         protokoll::schreiben(&format!("GESPEICHERT {}", pfad.display()));
                     }
                     Err(e) => dialoge::error(
                         &f.window,
-                        &format!("„{}“ konnte nicht geschrieben werden.", pfad.display()),
+                        &gettext_f(
+                            "“{path}” could not be written.",
+                            &[("path", &pfad.display().to_string())],
+                        ),
                         &e.to_string(),
                     ),
                 }

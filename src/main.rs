@@ -12,6 +12,7 @@
 mod dialoge;
 mod fenster;
 mod format;
+mod i18n;
 mod konfig;
 mod kriterien;
 mod protokoll;
@@ -25,7 +26,12 @@ use gtk::{gio, glib};
 
 pub const APP_ID: &str = "org.querencia.Dateisuche";
 pub const APP_NAME: &str = "Querencia Dateisuche";
-pub const FENSTERTITEL: &str = "Nach Dateien suchen";
+
+/// Fenstertitel wie gnome-search-tool (übersetzt).
+pub fn fenstertitel() -> String {
+    // TRANSLATORS: Fenstertitel (gnome-search-tool 2.x „Search for Files“).
+    i18n::gettext("Search for Files")
+}
 
 /// Ausgewertete Befehlszeile.
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -87,6 +93,7 @@ pub const HILFETEXT: &str = "Aufruf: querencia-dateisuche [OPTIONEN]\n\
   --hilfe         diese Hilfe\n";
 
 fn main() -> glib::ExitCode {
+    i18n::init();
     let app = gtk::Application::builder()
         .application_id(APP_ID)
         .flags(gio::ApplicationFlags::HANDLES_COMMAND_LINE | gio::ApplicationFlags::NON_UNIQUE)

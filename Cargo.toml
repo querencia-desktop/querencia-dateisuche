@@ -1,6 +1,6 @@
 [package]
 name = "querencia-dateisuche"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 rust-version = "1.92"
 description = "Querencia Dateisuche: „Nach Dateien suchen …“ für Querencia Desktop, ohne Indexdienst (Prototyp)"
@@ -15,6 +15,9 @@ walkdir = "2.5"
 # Namensmuster (* und ?) und „Name entspricht regulärem Ausdruck“,
 # Textsuche in Dateiinhalten (regex::bytes, Groß/Klein ignoriert).
 regex = "1.12"
+# Übersetzungen über GNU gettext der Systembibliothek (glibc), wie die
+# übrigen Querencia-Programme.
+gettext-rs = { version = "0.8", features = ["gettext-system"] }
 
 [profile.release]
 lto = true

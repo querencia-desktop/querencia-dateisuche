@@ -1,19 +1,20 @@
 //! Anzeigeformate der Ergebnisliste und der Statuszeile: Größen in
-//! Byte/KB/MB/GB mit deutschem Dezimalkomma, Datum als „TT.MM.JJJJ HH:MM“,
-//! Zählung „N Dateien gefunden“.
+//! Byte/KB/MB/GB mit Dezimalkomma, Datum je Sprache (deutsch
+//! „TT.MM.JJJJ HH:MM“), Zählung „N Dateien gefunden“. Dezimalkomma und
+//! Tausenderpunkt bleiben in jeder Sprache (Entscheidung wie im Rechner;
+//! Trennzeichen nach Region statt Sprache ist QD-056).
 
 use gtk::glib;
+
+use crate::i18n::{gettext, ngettext_f};
 
 /// Größe wie in Nautilus 2: ganze Byte, darüber eine Nachkommastelle
 /// (Basis 1024), deutsches Komma.
 pub fn groesse(bytes: u64) -> String {
     const STUFEN: [&str; 4] = ["KB", "MB", "GB", "TB"];
     if bytes < 1024 {
-        return if bytes == 1 {
-            "1 Byte".to_string()
-        } else {
-            format!("{bytes} Byte")
-        };
+        // TRANSLATORS: Dateigröße unter 1 KB.
+        return ngettext_f("{n} byte", "{n} bytes", bytes as usize, &[]);
     }
     let mut wert = bytes as f64 / 1024.0;
     let mut stufe = 0;
@@ -29,9 +30,10 @@ pub fn groesse(bytes: u64) -> String {
     format!("{} {}", text.replace('.', ","), STUFEN[stufe])
 }
 
-/// „18.10.2026 18:30“ (Ortszeit des Aufrufers).
+/// „2026-10-18 18:30“, deutsch „18.10.2026 18:30“ (Ortszeit des Aufrufers).
 pub fn datum(zeit: &glib::DateTime) -> String {
-    zeit.format("%d.%m.%Y %H:%M")
+    // TRANSLATORS: Spalte „Date Modified“, Format von g_date_time_format.
+    zeit.format(&gettext("%Y-%m-%d %H:%M"))
         .map(|s| s.to_string())
         .unwrap_or_default()
 }
@@ -45,11 +47,16 @@ pub fn datum_unix(sekunden: i64) -> String {
 
 /// Statuszeile: „Keine Dateien gefunden“, „1 Datei gefunden“, „12 Dateien gefunden“.
 pub fn gefunden(anzahl: usize) -> String {
-    match anzahl {
-        0 => "Keine Dateien gefunden".to_string(),
-        1 => "1 Datei gefunden".to_string(),
-        n => format!("{} Dateien gefunden", tausender(n)),
+    if anzahl == 0 {
+        return gettext("No files found");
     }
+    // TRANSLATORS: {count} mit Tausenderpunkten, z. B. „1.234“.
+    ngettext_f(
+        "{count} file found",
+        "{count} files found",
+        anzahl,
+        &[("count", &tausender(anzahl))],
+    )
 }
 
 /// Tausenderpunkte: 1234567 → „1.234.567“.
@@ -71,9 +78,10 @@ mod tests {
 
     #[test]
     fn groessen() {
-        assert_eq!(groesse(0), "0 Byte");
-        assert_eq!(groesse(1), "1 Byte");
-        assert_eq!(groesse(1023), "1023 Byte");
+        // Ohne Katalog englisch (msgid), deutsch siehe po/de.po.
+        assert_eq!(groesse(0), "0 bytes");
+        assert_eq!(groesse(1), "1 byte");
+        assert_eq!(groesse(1023), "1023 bytes");
         assert_eq!(groesse(1024), "1,0 KB");
         assert_eq!(groesse(1536), "1,5 KB");
         assert_eq!(groesse(10 * 1024 * 1024), "10,0 MB");
@@ -88,17 +96,17 @@ mod tests {
     #[test]
     fn datumsformat() {
         let z = glib::DateTime::from_unix_utc(0).unwrap();
-        assert_eq!(datum(&z), "01.01.1970 00:00");
+        assert_eq!(datum(&z), "1970-01-01 00:00");
         let z = glib::DateTime::from_utc(2026, 10, 18, 18, 30, 7.0).unwrap();
-        assert_eq!(datum(&z), "18.10.2026 18:30");
+        assert_eq!(datum(&z), "2026-10-18 18:30");
     }
 
     #[test]
     fn zaehlung() {
-        assert_eq!(gefunden(0), "Keine Dateien gefunden");
-        assert_eq!(gefunden(1), "1 Datei gefunden");
-        assert_eq!(gefunden(2), "2 Dateien gefunden");
-        assert_eq!(gefunden(1234567), "1.234.567 Dateien gefunden");
+        assert_eq!(gefunden(0), "No files found");
+        assert_eq!(gefunden(1), "1 file found");
+        assert_eq!(gefunden(2), "2 files found");
+        assert_eq!(gefunden(1234567), "1.234.567 files found");
         assert_eq!(tausender(999), "999");
         assert_eq!(tausender(1000), "1.000");
     }

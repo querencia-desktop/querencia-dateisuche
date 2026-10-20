@@ -3,20 +3,24 @@
 # org.querencia.Dateisuche, damit labwc und die Fensterliste Symbol und
 # Namen finden. Categories ohne System;: das Panel sortiert Utility nach
 # „Zubehör“ (apps.rs, RULES); GNOME 2 zeigte den Eintrag unter „Orte“.
+# Vorlage: Name, GenericName, Comment und Keywords sind englisch (Wortlaut
+# gnome-search-tool 2.x); die Übersetzungen (Name[de]= …) setzt
+# `werkzeug/i18n.py desktop` aus po/*.po ein (entspricht msgfmt --desktop).
+# Erzeugt: org.querencia.Dateisuche.desktop.
 Type=Application
 Version=1.5
-Name=Nach Dateien suchen …
 Name[de]=Nach Dateien suchen …
-GenericName=File Search
+Name=Search for Files…
 GenericName[de]=Dateisuche
-Comment=Dateien nach Name, Inhalt, Datum und Größe suchen
+GenericName=File Search
 Comment[de]=Dateien nach Name, Inhalt, Datum und Größe suchen
+Comment=Locate documents and folders by name, content, date and size
 Exec=querencia-dateisuche
 TryExec=querencia-dateisuche
 Icon=org.querencia.Dateisuche
 Terminal=false
 Categories=GTK;Utility;FileTools;
-Keywords=search;find;files;
 Keywords[de]=Suchen;Finden;Dateien;Dateisuche;
+Keywords=search;find;files;
 StartupNotify=true
 StartupWMClass=org.querencia.Dateisuche

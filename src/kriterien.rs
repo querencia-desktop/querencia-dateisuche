@@ -12,6 +12,8 @@ use std::time::{Duration, SystemTime};
 use regex::Regex;
 use regex::bytes;
 
+use crate::i18n::{gettext, gettext_f};
+
 /// Ein gewähltes Kriterium mit seinem Wert.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Kriterium {
@@ -83,30 +85,33 @@ impl Art {
         Art::NurOrdner,
     ];
 
-    /// Beschriftung in der Auswahlliste.
-    pub fn bezeichnung(self) -> &'static str {
+    /// Beschriftung in der Auswahlliste (übersetzt).
+    pub fn bezeichnung(self) -> String {
+        // TRANSLATORS: Optionen unter „Select more options“, Wortlaut wie
+        // gnome-search-tool 2.x.
         match self {
-            Art::EnthaeltText => "Enthält den Text",
-            Art::GeaendertWenigerAls => "Datum geändert vor weniger als",
-            Art::GeaendertMehrAls => "Datum geändert vor mehr als",
-            Art::GroesseMindestens => "Größe mindestens",
-            Art::GroesseHoechstens => "Größe höchstens",
-            Art::DateiIstLeer => "Datei ist leer",
-            Art::Besitzer => "Besitzer",
-            Art::Gruppe => "Gruppe",
-            Art::NameRegex => "Name entspricht regulärem Ausdruck",
-            Art::VersteckteEinbeziehen => "Versteckte und Sicherungsdateien einbeziehen",
-            Art::VerknuepfungenFolgen => "Symbolischen Verknüpfungen folgen",
-            Art::AndereDateisystemeFolgen => "Anderen Dateisystemen folgen",
-            Art::NurOrdner => "Nur Ordner",
+            Art::EnthaeltText => gettext("Contains the text"),
+            Art::GeaendertWenigerAls => gettext("Date modified less than"),
+            Art::GeaendertMehrAls => gettext("Date modified more than"),
+            Art::GroesseMindestens => gettext("Size at least"),
+            Art::GroesseHoechstens => gettext("Size at most"),
+            Art::DateiIstLeer => gettext("File is empty"),
+            Art::Besitzer => gettext("Owned by user"),
+            Art::Gruppe => gettext("Owned by group"),
+            Art::NameRegex => gettext("Name matches regular expression"),
+            Art::VersteckteEinbeziehen => gettext("Show hidden and backup files"),
+            Art::VerknuepfungenFolgen => gettext("Follow symbolic links"),
+            Art::AndereDateisystemeFolgen => gettext("Search other file systems"),
+            Art::NurOrdner => gettext("Only folders"),
         }
     }
 
-    /// Text hinter dem Eingabefeld („Tagen“).
-    pub fn nachsatz(self) -> &'static str {
+    /// Text hinter dem Eingabefeld („days“).
+    pub fn nachsatz(self) -> String {
         match self {
-            Art::GeaendertWenigerAls | Art::GeaendertMehrAls => "Tagen",
-            _ => "",
+            // TRANSLATORS: hinter der Zahl bei „Date modified less/more than“.
+            Art::GeaendertWenigerAls | Art::GeaendertMehrAls => gettext("days"),
+            _ => String::new(),
         }
     }
 
@@ -313,10 +318,12 @@ impl Filter {
         };
         let muster = anfrage.muster.trim();
         if !muster.is_empty() {
-            f.name = Some(
-                Regex::new(&glob_zu_regex(muster))
-                    .map_err(|e| format!("Namensmuster unbrauchbar: {e}"))?,
-            );
+            f.name = Some(Regex::new(&glob_zu_regex(muster)).map_err(|e| {
+                gettext_f(
+                    "Unusable name pattern: {error}",
+                    &[("error", &e.to_string())],
+                )
+            })?);
         }
         for k in &anfrage.kriterien {
             match k {
@@ -325,7 +332,12 @@ impl Filter {
                         let re = bytes::RegexBuilder::new(&regex::escape(t))
                             .case_insensitive(true)
                             .build()
-                            .map_err(|e| format!("Suchtext unbrauchbar: {e}"))?;
+                            .map_err(|e| {
+                                gettext_f(
+                                    "Unusable search text: {error}",
+                                    &[("error", &e.to_string())],
+                                )
+                            })?;
                         f.text = Some(re);
                     }
                 }
@@ -340,26 +352,26 @@ impl Filter {
                 Kriterium::DateiIstLeer => f.leer = true,
                 Kriterium::Besitzer(b) => {
                     if !b.trim().is_empty() {
-                        f.uid = Some(
-                            uid_fuer(b.trim())
-                                .ok_or_else(|| format!("Unbekannter Benutzer „{}“", b.trim()))?,
-                        );
+                        f.uid = Some(uid_fuer(b.trim()).ok_or_else(|| {
+                            gettext_f("Unknown user “{name}”", &[("name", b.trim())])
+                        })?);
                     }
                 }
                 Kriterium::Gruppe(g) => {
                     if !g.trim().is_empty() {
-                        f.gid = Some(
-                            gid_fuer(g.trim())
-                                .ok_or_else(|| format!("Unbekannte Gruppe „{}“", g.trim()))?,
-                        );
+                        f.gid = Some(gid_fuer(g.trim()).ok_or_else(|| {
+                            gettext_f("Unknown group “{name}”", &[("name", g.trim())])
+                        })?);
                     }
                 }
                 Kriterium::NameRegex(r) => {
                     if !r.is_empty() {
-                        f.name_regex = Some(
-                            Regex::new(r)
-                                .map_err(|e| format!("Regulärer Ausdruck unbrauchbar: {e}"))?,
-                        );
+                        f.name_regex = Some(Regex::new(r).map_err(|e| {
+                            gettext_f(
+                                "Unusable regular expression: {error}",
+                                &[("error", &e.to_string())],
+                            )
+                        })?);
                     }
                 }
                 Kriterium::VersteckteEinbeziehen => f.versteckte = true,

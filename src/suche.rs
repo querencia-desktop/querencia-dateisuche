@@ -11,6 +11,8 @@ use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
 use std::time::SystemTime;
 
+use crate::i18n::gettext_f;
+
 use walkdir::WalkDir;
 
 use crate::kriterien::{Anfrage, Filter, Inhalt, Werte};
@@ -96,9 +98,9 @@ impl Drop for Lauf {
 pub fn starten(anfrage: Anfrage) -> Result<Lauf, String> {
     let filter = Filter::neu(&anfrage)?;
     if !anfrage.ordner.is_dir() {
-        return Err(format!(
-            "„{}“ ist kein Ordner oder nicht lesbar.",
-            anfrage.ordner.display()
+        return Err(gettext_f(
+            "“{folder}” is not a folder or is not readable.",
+            &[("folder", &anfrage.ordner.display().to_string())],
         ));
     }
     let stopp = Arc::new(AtomicBool::new(false));
@@ -107,7 +109,12 @@ pub fn starten(anfrage: Anfrage) -> Result<Lauf, String> {
     thread::Builder::new()
         .name("dateisuche".into())
         .spawn(move || durchlaufen(anfrage, filter, s, sender))
-        .map_err(|e| format!("Suchthread nicht startbar: {e}"))?;
+        .map_err(|e| {
+            gettext_f(
+                "The search thread cannot be started: {error}",
+                &[("error", &e.to_string())],
+            )
+        })?;
     Ok(Lauf { stopp, empfaenger })
 }
 

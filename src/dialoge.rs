@@ -9,7 +9,8 @@ use std::rc::Rc;
 use gtk::prelude::*;
 use gtk::{gdk, gio, glib};
 
-use crate::{APP_NAME, FENSTERTITEL};
+use crate::i18n::{gettext, gettext_f};
+use crate::{APP_NAME, fenstertitel};
 
 /// Noch nicht gemeldete Antwort (wird genau einmal genommen).
 type Antwort = Rc<RefCell<Option<Box<dyn FnOnce(bool)>>>>;
@@ -133,7 +134,7 @@ fn content(child: &impl IsA<gtk::Widget>, buttons: &gtk::Box) -> gtk::Box {
 }
 
 fn schliess_knopf(window: &gtk::Window) -> gtk::Button {
-    let close = gtk::Button::with_mnemonic("_Schließen");
+    let close = gtk::Button::with_mnemonic(&gettext("_Close"));
     let w = window.downgrade();
     close.connect_clicked(move |_| {
         if let Some(w) = w.upgrade() {
@@ -145,7 +146,7 @@ fn schliess_knopf(window: &gtk::Window) -> gtk::Button {
 
 /// Fehlermeldung mit einem Knopf „Schließen“.
 pub fn error(parent: &impl IsA<gtk::Window>, primary: &str, secondary: &str) {
-    let window = modal_window(parent, FENSTERTITEL);
+    let window = modal_window(parent, &fenstertitel());
     let close = schliess_knopf(&window);
     let body = message_box("dialog-error", primary, secondary);
     window.set_child(Some(&content(&body, &button_row(&[&close]))));
@@ -165,8 +166,8 @@ pub fn frage(
     gefaehrlich: bool,
     antwort: impl FnOnce(bool) + 'static,
 ) {
-    let window = modal_window(parent, FENSTERTITEL);
-    let cancel = gtk::Button::with_mnemonic("_Abbrechen");
+    let window = modal_window(parent, &fenstertitel());
+    let cancel = gtk::Button::with_mnemonic(&gettext("_Cancel"));
     let ok = gtk::Button::with_mnemonic(bestaetigen);
     ok.add_css_class(if gefaehrlich {
         "destructive-action"
@@ -239,7 +240,7 @@ pub fn datei_dialog(
         .default_height(500)
         .destroy_with_parent(true)
         .build();
-    chooser.add_button("_Abbrechen", gtk::ResponseType::Cancel);
+    chooser.add_button(&gettext("_Cancel"), gtk::ResponseType::Cancel);
     chooser.add_button(bestaetigen, gtk::ResponseType::Accept);
     chooser.set_default_response(gtk::ResponseType::Accept);
     chooser.add_css_class("qd-dialog");
@@ -271,7 +272,7 @@ const LOGO_64: &[u8] = include_bytes!("../data/logo/querencia-logo-64.png");
 
 /// „Info“: offizielles Querencia-Logo C2, Name, Version, Lizenz.
 pub fn about(parent: &impl IsA<gtk::Window>) {
-    let window = modal_window(parent, &format!("Info zu {APP_NAME}"));
+    let window = modal_window(parent, &gettext_f("About {name}", &[("name", APP_NAME)]));
     let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
     body.set_halign(gtk::Align::Center);
     if let Ok(texture) = gdk::Texture::from_bytes(&glib::Bytes::from_static(LOGO_64)) {
@@ -284,12 +285,12 @@ pub fn about(parent: &impl IsA<gtk::Window>) {
         "<b><big>{APP_NAME} {}</big></b>",
         env!("CARGO_PKG_VERSION")
     ));
-    let text = gtk::Label::new(Some(
-        "„Nach Dateien suchen …“ für Querencia Desktop\n\
-         nach dem Vorbild von gnome-search-tool (GNOME 2),\n\
-         ohne Indexdienst.\n\n\
-         Prototyp – nicht für den Alltag freigegeben.",
-    ));
+    let text = gtk::Label::new(Some(&gettext(
+        "“Search for Files…” for Querencia Desktop\n\
+         modelled on gnome-search-tool (GNOME 2),\n\
+         without an indexing service.\n\n\
+         Prototype – not released for everyday use.",
+    )));
     text.set_justify(gtk::Justification::Center);
     let tech = gtk::Label::new(Some(&format!(
         "GTK {}.{}.{}",
@@ -298,7 +299,7 @@ pub fn about(parent: &impl IsA<gtk::Window>) {
         gtk::micro_version()
     )));
     tech.add_css_class("dim-label");
-    let license = gtk::Label::new(Some("Lizenz: GNU GPL, Version 3 oder neuer"));
+    let license = gtk::Label::new(Some(&gettext("License: GNU GPL, version 3 or later")));
     license.add_css_class("dim-label");
     body.append(&name);
     body.append(&text);
@@ -312,37 +313,48 @@ pub fn about(parent: &impl IsA<gtk::Window>) {
     close.grab_focus();
 }
 
-const HILFE: &str = "\
-<b>Name enthält</b>: Teil des Dateinamens, Groß- und Kleinschreibung spielt \
-keine Rolle. Mit den Platzhaltern <tt>*</tt> (beliebig viele Zeichen) und \
-<tt>?</tt> (ein Zeichen) muss der ganze Name passen, z. B. <tt>*.txt</tt>.
+/// Kurzhilfe als Pango-Markup, im Ganzen übersetzt (Absätze und Markup
+/// bleiben in jeder Sprache gleich aufgebaut).
+fn hilfe_text() -> String {
+    // TRANSLATORS: Pango-Markup; <b>, <tt> und die Leerzeilen zwischen den
+    // Absätzen beibehalten, Befehlszeile und Pfad nicht übersetzen.
+    gettext(
+        "\
+<b>Name contains</b>: part of the file name, upper and lower case do not \
+matter. With the wildcards <tt>*</tt> (any number of characters) and \
+<tt>?</tt> (one character) the whole name must match, e.g. <tt>*.txt</tt>.
 
-<b>Suchen in Ordner</b>: Ausgangsordner; Unterordner werden immer durchsucht. \
-Versteckte Ordner und Dateien (<tt>.name</tt>) sowie Sicherungsdateien \
-(<tt>name~</tt>) nur mit der gleichnamigen Option.
+<b>Look in folder</b>: the starting folder; subfolders are always searched. \
+Hidden folders and files (<tt>.name</tt>) and backup files \
+(<tt>name~</tt>) only with the option of the same name.
 
-<b>Weitere Optionen</b>: Eine Option aus der Liste wählen und „Hinzufügen“ \
-drücken; alle gewählten Optionen müssen zugleich zutreffen. „Enthält den \
-Text“ liest nur Textdateien bis zur eingestellten Größe (Vorgabe 10 MB, \
-<tt>~/.config/querencia/dateisuche.ini</tt>), Groß/Klein wird ignoriert. \
-„Name entspricht regulärem Ausdruck“ beachtet Groß/Klein.
+<b>More options</b>: choose an option from the list and press “Add”; all \
+chosen options must apply at the same time. “Contains the text” reads only \
+text files up to the configured size (default 10 MB, \
+<tt>~/.config/querencia/dateisuche.ini</tt>), case is ignored. \
+“Name matches regular expression” respects case.
 
-<b>Ergebnisse</b>: Doppelklick oder Eingabetaste öffnet mit der \
-Standardanwendung. Rechte Maustaste: Öffnen, Öffnen mit …, Enthaltenden \
-Ordner öffnen, Pfad kopieren (Strg+C), In den Papierkorb verschieben (Entf, \
-mit Rückfrage), Ergebnisse speichern als Textdatei. Spaltenköpfe sortieren.
+<b>Results</b>: double-click or Enter opens with the default application. \
+Right mouse button: Open, Open With…, Open Containing Folder, Copy Path \
+(Ctrl+C), Move to Trash (Delete, with confirmation), Save Results As a text \
+file. Column headers sort.
 
-<b>Befehlszeile</b>: <tt>querencia-dateisuche [--ordner PFAD] [--name MUSTER] [--suchen]</tt>";
+<b>Command line</b>: <tt>querencia-dateisuche [--ordner PFAD] [--name MUSTER] [--suchen]</tt>",
+    )
+}
 
 /// Kurzhilfe mit Knopf „Info“.
 pub fn hilfe(parent: &impl IsA<gtk::Window>) {
-    let window = modal_window(parent, &format!("Hilfe zu „{FENSTERTITEL}“"));
+    let window = modal_window(
+        parent,
+        &gettext_f("Help for “{title}”", &[("title", &fenstertitel())]),
+    );
     let text = gtk::Label::new(None);
-    text.set_markup(HILFE);
+    text.set_markup(&hilfe_text());
     text.set_wrap(true);
     text.set_max_width_chars(70);
     text.set_xalign(0.0);
-    let info = gtk::Button::with_mnemonic("_Info");
+    let info = gtk::Button::with_mnemonic(&gettext("_About"));
     let close = schliess_knopf(&window);
     window.set_child(Some(&content(&text, &button_row(&[&info, &close]))));
     window.set_default_widget(Some(&close));
@@ -360,13 +372,16 @@ pub fn oeffnen_mit(parent: &impl IsA<gtk::Window>, datei: &gio::File, mime: &str
         .basename()
         .map(|b| b.to_string_lossy().into_owned())
         .unwrap_or_default();
-    let window = modal_window(parent, &format!("„{name}“ öffnen mit"));
+    let window = modal_window(parent, &gettext_f("Open “{name}” With", &[("name", &name)]));
     window.set_resizable(true);
     window.set_default_size(420, 440);
 
-    let hinweis = gtk::Label::new(Some(&format!(
-        "Anwendung zum Öffnen von „{name}“ ({}) wählen:",
-        gio::content_type_get_description(mime)
+    let hinweis = gtk::Label::new(Some(&gettext_f(
+        "Select an application to open “{name}” ({type}):",
+        &[
+            ("name", &name),
+            ("type", &gio::content_type_get_description(mime)),
+        ],
     )));
     hinweis.set_xalign(0.0);
     hinweis.set_wrap(true);
@@ -379,7 +394,7 @@ pub fn oeffnen_mit(parent: &impl IsA<gtk::Window>, datei: &gio::File, mime: &str
         .has_frame(true)
         .min_content_height(260)
         .build();
-    let alle = gtk::CheckButton::with_mnemonic("_Alle Anwendungen anzeigen");
+    let alle = gtk::CheckButton::with_mnemonic(&gettext("_Show all applications"));
     let apps: Rc<RefCell<Vec<gio::AppInfo>>> = Rc::new(RefCell::new(Vec::new()));
 
     let fuellen = {
@@ -426,8 +441,8 @@ pub fn oeffnen_mit(parent: &impl IsA<gtk::Window>, datei: &gio::File, mime: &str
     let f = fuellen.clone();
     alle.connect_toggled(move |c| f(c.is_active()));
 
-    let cancel = gtk::Button::with_mnemonic("_Abbrechen");
-    let open = gtk::Button::with_mnemonic("Ö_ffnen");
+    let cancel = gtk::Button::with_mnemonic(&gettext("_Cancel"));
+    let open = gtk::Button::with_mnemonic(&gettext("_Open"));
     open.add_css_class("suggested-action");
     let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
     body.append(&hinweis);
@@ -462,7 +477,10 @@ pub fn oeffnen_mit(parent: &impl IsA<gtk::Window>, datei: &gio::File, mime: &str
                 Ok(()) => close_later(&window),
                 Err(e) => error(
                     &window,
-                    &format!("„{}“ konnte nicht gestartet werden.", app.display_name()),
+                    &gettext_f(
+                        "“{name}” could not be started.",
+                        &[("name", &app.display_name())],
+                    ),
                     e.message(),
                 ),
             }
