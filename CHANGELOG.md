@@ -1,5 +1,27 @@
 # Änderungen
 
+## 0.1.4 – 2026-10-21
+
+Dunkeltauglich (CSS-Welle dunkel, Alpha 2), hell unverändert:
+
+- Menü (Kontextmenü, Auswahllisten), Spaltenköpfe der Ergebnisliste und
+  Statuszeile ohne feste Hellfarben: Grund und Rand der Menüs sowie Verlauf
+  und Schrift der Spaltenköpfe kommen aus dem GTK-Thema, die Ränder der
+  Spaltenköpfe aus `@borders`, die Statuszeile aus `@theme_fg_color`. Mit
+  Querencia-Klassisch hell sind es dieselben Werte wie bisher; mit einem
+  dunklen Thema folgt die Dateisuche ohne eigenen Dunkelblock. Keine Bindung
+  der Programm-CSS an das Farbschema nötig (kein `@media`), daher keine
+  Kopplung an ein bestimmtes Thema.
+- Beim Start einmal `gtk-interface-color-scheme` melden: GTK 4.22 lädt bei
+  „prefer-dark“ das dunkle Thema-CSS sonst nur bei einem Wechsel im
+  laufenden Programm.
+- Unit-Test gegen feste Hellfarben in `style.css`. Texte, Katalog, Suche und
+  Befehlszeile unverändert. Die orange Auswahl (`#f6a179` → `#f07746`,
+  Schrift `#1a1a1a`) bleibt fest.
+- Spaltenköpfe zeigen beim Überfahren und Drücken jetzt die Hervorhebung des
+  Themas (bisher überdeckte die eigene Regel jeden Zustand mit dem
+  Grundverlauf).
+
 ## 0.1.3 – 2026-10-20
 
 Dunkle Auswahlschrift (CSS-Welle, passend zum GTK-Thema Querencia-Klassisch,

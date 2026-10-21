@@ -1,11 +1,14 @@
 /* Querencia Dateisuche – klassische Optik (Ambiance-Farbwerte wie Panel,
-   Files und Editor; keine Bilder oder Theme-Dateien übernommen). */
+   Files und Editor; keine Bilder oder Theme-Dateien übernommen).
+   Grund, Schrift und Ränder kommen ab 0.1.4 aus dem GTK-Thema (benannte
+   Themenfarben bzw. dessen Menü- und Spaltenkopf-Regeln), damit die
+   Dateisuche einem dunklen Thema folgt; hell sind es dieselben Werte. Feste
+   Farben bleiben nur für die orange Auswahl. */
 
+/* Grund und Rand des Menüs setzt das Thema (popover.menu.background). */
 window.qd-window popover.menu contents {
   border-radius: 0;
   padding: 2px 0;
-  background-color: #f5f4f2;
-  border: 1px solid #c7c2be;
 }
 
 window.qd-window popover.menu modelbutton {
@@ -19,13 +22,12 @@ window.qd-window popover.menu modelbutton:selected {
   color: #1a1a1a;
 }
 
+/* Verlauf und Schrift der Spaltenköpfe setzt das Thema (columnview.view). */
 window.qd-window columnview > header > button {
-  background-image: linear-gradient(to bottom, #fbfaf9, #ecebe9);
-  border-right: 1px solid #c7c2be;
-  border-bottom: 1px solid #c7c2be;
+  border-right: 1px solid @borders;
+  border-bottom: 1px solid @borders;
   border-radius: 0;
   padding: 2px 6px;
-  color: #3c3c3c;
 }
 
 window.qd-window columnview > listview > row:selected {
@@ -38,7 +40,7 @@ window.qd-window columnview > listview > row:selected label {
 }
 
 window.qd-window label.qd-status {
-  color: #3c3c3c;
+  color: @theme_fg_color;
 }
 
 window.qd-window button.qd-knopf,
