@@ -1122,4 +1122,15 @@ mod tests {
         assert_eq!(einheit_zerlegen(3 * 1024 * 1024), (3.0, 2));
         assert_eq!(einheit_zerlegen(2 * 1024 * 1024 * 1024), (2.0, 3));
     }
+
+    /// Grund, Schrift und Ränder kommen aus dem Thema (dunkeltauglich ohne
+    /// eigenen Dunkelblock): keine der früheren festen Hellfarben mehr.
+    #[test]
+    fn css_ohne_feste_hellfarben() {
+        let css = CSS.to_ascii_lowercase();
+        for farbe in ["#f5f4f2", "#c7c2be", "#fbfaf9", "#ecebe9", "#3c3c3c"] {
+            assert!(!css.contains(farbe), "style.css enthält noch {farbe}");
+        }
+        assert!(!css.contains("prefers-color-scheme"));
+    }
 }
