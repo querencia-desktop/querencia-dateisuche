@@ -2,9 +2,11 @@
 
 „Nach Dateien suchen …“ für alle, die Querencia Desktop benutzen: Dateien
 nach Name, Inhalt, Datum, Größe und Besitzer finden, ohne Indexdienst. Teil
-von [Querencia Desktop](https://github.com/querencia-desktop/querencia) –
+von [Querencia Desktop](https://querencialinux.org) –
 einer klassischen Desktopumgebung im GNOME-2-Stil für Wayland (labwc, Rust,
 GTK 4).
+Installiert wird es zusammen mit Querencia Desktop aus der APT-Quelle;
+Anleitung auf <https://querencialinux.org>.
 
 *English summary:* A "Search for Files" tool without an indexing service,
 modelled on GNOME 2's gnome-search-tool. Part of Querencia Desktop, a classic

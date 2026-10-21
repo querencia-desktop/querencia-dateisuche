@@ -40,5 +40,4 @@ Die Live-Integration in die Querencia-Sitzung der Entwicklungs-VM erledigen
 Skripte unter `integration/` (`pruefen|aktivieren|zurueck`, unveränderliche
 Ablage `~/opt/querencia/dateisuche/<sha16>/` mit `share/locale` daneben,
 Link `~/opt/querencia/bin/querencia-dateisuche`, Starter). Der Ordner enthält
-feste Pfade der VM und wird vor der Veröffentlichung herausgefiltert
-(ENTSCHEIDUNGEN Nr. 13).
+feste Pfade der VM und wird vor der Veröffentlichung herausgefiltert.
