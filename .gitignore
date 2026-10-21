@@ -8,3 +8,7 @@ __pycache__/
 # Vorlage der Integration 0.1.3: Binary und Katalog nicht ins Repo
 /integration/vorschlag-013/querencia-dateisuche
 /integration/vorschlag-013/share/
+# Ausgaben der isolierten GUI-Prüfung
+/nachweis/
+/werkzeug/bin/qeingabe
+/werkzeug/bin/qausgabe
