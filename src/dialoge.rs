@@ -9,8 +9,8 @@ use std::rc::Rc;
 use gtk::prelude::*;
 use gtk::{gdk, gio, glib};
 
+use crate::fenstertitel;
 use crate::i18n::{gettext, gettext_f};
-use crate::{APP_NAME, fenstertitel};
 
 /// Noch nicht gemeldete Antwort (wird genau einmal genommen).
 type Antwort = Rc<RefCell<Option<Box<dyn FnOnce(bool)>>>>;
@@ -270,9 +270,34 @@ pub fn datei_dialog(
 
 const LOGO_64: &[u8] = include_bytes!("../data/logo/querencia-logo-64.png");
 
-/// „Info“: offizielles Querencia-Logo C2, Name, Version, Lizenz.
+/// Website von Querencia Desktop (Info-Dialog).
+const WEBSITE: &str = "https://querencialinux.org";
+/// Neue Fehlermeldung im gemeinsamen Repo (Hilfe → Fehler melden).
+const FEHLER_MELDEN: &str = "https://github.com/querencia-desktop/querencia/issues/new/choose";
+
+/// Adresse der Online-Hilfe in der Sprache der Oberfläche: Die Adresse steht
+/// selbst im Katalog, gettext wählt sie wie jeden Text nach der Locale
+/// (ohne Katalog Englisch).
+fn online_hilfe() -> String {
+    // TRANSLATORS: Adresse der Online-Hilfe; nur das Sprachkürzel anpassen
+    // (deutsch …/de/docs/).
+    gettext("https://querencialinux.org/en/docs/")
+}
+
+/// Öffnet `uri` mit dem Standardprogramm der Sitzung (wie xdg-open).
+fn open_uri(parent: &impl IsA<gtk::Window>, uri: &str) {
+    let context = WidgetExt::display(parent.as_ref()).app_launch_context();
+    if let Err(err) = gio::AppInfo::launch_default_for_uri(uri, Some(&context)) {
+        eprintln!("querencia-dateisuche: {uri} nicht geöffnet: {err}");
+    }
+}
+
+/// „Info“: offizielles Querencia-Logo C2, Name, Version, Hinweis auf die
+/// Alpha, Website, Copyright und Lizenz.
 pub fn about(parent: &impl IsA<gtk::Window>) {
-    let window = modal_window(parent, &gettext_f("About {name}", &[("name", APP_NAME)]));
+    // TRANSLATORS: Fenstertitel des Info-Dialogs; deutsch mit dem Eigennamen
+    // „Querencia Dateisuche“, englisch mit dem Namen aus dem Anwendungsmenü.
+    let window = modal_window(parent, &gettext("About Search for Files"));
     let body = gtk::Box::new(gtk::Orientation::Vertical, 8);
     body.set_halign(gtk::Align::Center);
     if let Ok(texture) = gdk::Texture::from_bytes(&glib::Bytes::from_static(LOGO_64)) {
@@ -281,17 +306,23 @@ pub fn about(parent: &impl IsA<gtk::Window>) {
         body.append(&image);
     }
     let name = gtk::Label::new(None);
+    // TRANSLATORS: Programmname und Version im Info-Dialog; deutsch
+    // „Querencia Dateisuche {version}“.
+    let titel = gettext_f(
+        "Search for Files {version}",
+        &[("version", env!("CARGO_PKG_VERSION"))],
+    );
     name.set_markup(&format!(
-        "<b><big>{APP_NAME} {}</big></b>",
-        env!("CARGO_PKG_VERSION")
+        "<b><big>{}</big></b>",
+        glib::markup_escape_text(&titel)
     ));
     let text = gtk::Label::new(Some(&gettext(
         "“Search for Files…” for Querencia Desktop\n\
          modelled on gnome-search-tool (GNOME 2),\n\
-         without an indexing service.\n\n\
-         Prototype – not released for everyday use.",
+         without an indexing service.",
     )));
     text.set_justify(gtk::Justification::Center);
+    let alpha = gtk::Label::new(Some(&gettext("Alpha – not released for everyday use.")));
     let tech = gtk::Label::new(Some(&format!(
         "GTK {}.{}.{}",
         gtk::major_version(),
@@ -299,11 +330,26 @@ pub fn about(parent: &impl IsA<gtk::Window>) {
         gtk::micro_version()
     )));
     tech.add_css_class("dim-label");
-    let license = gtk::Label::new(Some(&gettext("License: GNU GPL, version 3 or later")));
+    let website = gtk::Label::new(None);
+    website.set_markup(&format!("<a href=\"{WEBSITE}\">querencialinux.org</a>"));
+    // Wie die Knöpfe der Kurzhilfe über GIO statt über das Portal öffnen.
+    let w = window.downgrade();
+    website.connect_activate_link(move |_, uri| {
+        if let Some(w) = w.upgrade() {
+            open_uri(&w, uri);
+        }
+        glib::Propagation::Stop
+    });
+    let copyright = gtk::Label::new(Some("© 2026 Querencia Desktop contributors"));
+    copyright.add_css_class("dim-label");
+    let license = gtk::Label::new(Some(&gettext("License: GPL-3.0-or-later")));
     license.add_css_class("dim-label");
     body.append(&name);
     body.append(&text);
+    body.append(&alpha);
     body.append(&tech);
+    body.append(&website);
+    body.append(&copyright);
     body.append(&license);
     let close = schliess_knopf(&window);
     window.set_child(Some(&content(&body, &button_row(&[&close]))));
@@ -343,7 +389,9 @@ file. Column headers sort.
     )
 }
 
-/// Kurzhilfe mit Knopf „Info“.
+/// Kurzhilfe mit den Knöpfen „Online-Hilfe“, „Fehler melden“ (beide öffnen
+/// den Browser) und „Info“ – die Dateisuche hat wie gnome-search-tool keine
+/// Menüleiste, die Kurzhilfe vertritt das Hilfe-Menü.
 pub fn hilfe(parent: &impl IsA<gtk::Window>) {
     let window = modal_window(
         parent,
@@ -354,11 +402,22 @@ pub fn hilfe(parent: &impl IsA<gtk::Window>) {
     text.set_wrap(true);
     text.set_max_width_chars(70);
     text.set_xalign(0.0);
+    // TRANSLATORS: Knöpfe der Kurzhilfe (statt Hilfe-Menü); Zugriffstasten
+    // im Dialog verschieden halten.
+    let online = gtk::Button::with_mnemonic(&gettext("Online _Help"));
+    let fehler = gtk::Button::with_mnemonic(&gettext("_Report a Bug"));
     let info = gtk::Button::with_mnemonic(&gettext("_About"));
     let close = schliess_knopf(&window);
-    window.set_child(Some(&content(&text, &button_row(&[&info, &close]))));
+    window.set_child(Some(&content(
+        &text,
+        &button_row(&[&online, &fehler, &info, &close]),
+    )));
     window.set_default_widget(Some(&close));
     close_on_escape(&window);
+    let w = window.clone();
+    online.connect_clicked(move |_| open_uri(&w, &online_hilfe()));
+    let w = window.clone();
+    fehler.connect_clicked(move |_| open_uri(&w, FEHLER_MELDEN));
     let w = window.clone();
     info.connect_clicked(move |_| about(&w));
     window.present();
