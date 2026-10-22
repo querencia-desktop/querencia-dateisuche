@@ -35,10 +35,9 @@ als Ressource eingebettet (`werkzeug/ressourcen.sh` erzeugt
 `data/resource/dateisuche.gresource`; `werkzeug/symbol.sh` prüft Titelleiste
 und Panel-Menü isoliert).
 
-**Integration (nur auf der Entwicklungs-VM, nicht Teil der Veröffentlichung):**
-Die Live-Integration in die Querencia-Sitzung der Entwicklungs-VM erledigen
+**Integration (nur in der Entwicklungsumgebung, nicht Teil der Veröffentlichung):**
+Die Live-Integration in die Querencia-Sitzung der Entwicklungsumgebung erledigen
 Skripte unter `integration/` (`pruefen|aktivieren|zurueck`, unveränderliche
 Ablage `~/opt/querencia/dateisuche/<sha16>/` mit `share/locale` daneben,
 Link `~/opt/querencia/bin/querencia-dateisuche`, Starter). Der Ordner enthält
-feste Pfade der VM und wird vor der Veröffentlichung herausgefiltert
-(ENTSCHEIDUNGEN Nr. 13).
+feste Pfade der VM und wird vor der Veröffentlichung herausgefiltert.
