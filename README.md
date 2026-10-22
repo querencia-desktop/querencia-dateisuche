@@ -14,7 +14,7 @@ App-ID `org.querencia.Dateisuche`.
 |---|---|
 | Version | 0.1.5 (Tag `dateisuche/0.1.5`, Integration `dateisuche/0.1.5-int`; Info-Dialog mit Alpha-Hinweis, Website, Copyright und Lizenz, Kurzhilfe mit Online-Hilfe und Fehler melden) |
 | Auf der Entwicklungs-VM | live 0.1.4 seit 21.10.2026; 0.1.5 wartet auf Freigabe |
-| Letzte Prüfung | 21.10.2026: fmt und Clippy sauber, 32/32 Unit-Tests; isoliert 28 Läufe (de/en, 1024×768/1920×1080, hell/dunkel, Start und Wechsel), hell pixelgleich mit 0.1.3, Kontrast dunkel AA |
+| Letzte Prüfung | 22.10.2026 (0.1.5): fmt und Clippy sauber, 33/33 Unit-Tests, `i18n.py pruefen` PASS; isoliert Deutsch/Englisch 1024×768 mit Browser-Attrappe: Kurzhilfe → Online-Hilfe öffnet /de/docs/ bzw. /en/docs/, Fehler melden die GitHub-Seite (je über die Zugriffstaste), Info-Dialog mit Alpha-Hinweis, Website, Copyright und Lizenz |
 | Getestet auf | Ubuntu 26.04, labwc 0.9.8, GTK 4.22 |
 
 Änderungen je Version: [CHANGELOG.md](CHANGELOG.md).
