@@ -41,30 +41,43 @@ msgstr ""
 msgid "_Close"
 msgstr ""
 
-#: src/dialoge.rs:170 src/dialoge.rs:243 src/dialoge.rs:444
+#: src/dialoge.rs:170 src/dialoge.rs:243 src/dialoge.rs:503
 msgid "_Cancel"
 msgstr ""
 
-#: src/dialoge.rs:275
-#, no-c-format
-msgid "About {name}"
+#. TRANSLATORS: Adresse der Online-Hilfe; nur das Sprachkürzel anpassen (deutsch …/de/docs/).
+#: src/dialoge.rs:284
+msgid "https://querencialinux.org/en/docs/"
 msgstr ""
 
-#: src/dialoge.rs:288
+#. TRANSLATORS: Fenstertitel des Info-Dialogs; deutsch mit dem Eigennamen „Querencia Dateisuche“, englisch mit dem Namen aus dem Anwendungsmenü.
+#: src/dialoge.rs:300
+msgid "About Search for Files"
+msgstr ""
+
+#. TRANSLATORS: Programmname und Version im Info-Dialog; deutsch „Querencia Dateisuche {version}“.
+#: src/dialoge.rs:311
+#, no-c-format
+msgid "Search for Files {version}"
+msgstr ""
+
+#: src/dialoge.rs:319
 msgid ""
 "“Search for Files…” for Querencia Desktop\n"
 "modelled on gnome-search-tool (GNOME 2),\n"
-"without an indexing service.\n"
-"\n"
-"Prototype – not released for everyday use."
+"without an indexing service."
 msgstr ""
 
-#: src/dialoge.rs:302
-msgid "License: GNU GPL, version 3 or later"
+#: src/dialoge.rs:325
+msgid "Alpha – not released for everyday use."
+msgstr ""
+
+#: src/dialoge.rs:345
+msgid "License: GPL-3.0-or-later"
 msgstr ""
 
 #. TRANSLATORS: Pango-Markup; <b>, <tt> und die Leerzeilen zwischen den Absätzen beibehalten, Befehlszeile und Pfad nicht übersetzen.
-#: src/dialoge.rs:321
+#: src/dialoge.rs:367
 msgid ""
 "<b>Name contains</b>: part of the file name, upper and lower case do not matter. With the wildcards <tt>*</tt> (any number of characters) and <tt>?</tt> (one character) the whole name must match, e.g. <tt>*.txt</tt>.\n"
 "\n"
@@ -77,34 +90,43 @@ msgid ""
 "<b>Command line</b>: <tt>querencia-dateisuche [--ordner PFAD] [--name MUSTER] [--suchen]</tt>"
 msgstr ""
 
-#: src/dialoge.rs:350
+#: src/dialoge.rs:398
 #, no-c-format
 msgid "Help for “{title}”"
 msgstr ""
 
-#: src/dialoge.rs:357
+#. TRANSLATORS: Knöpfe der Kurzhilfe (statt Hilfe-Menü); Zugriffstasten im Dialog verschieden halten.
+#: src/dialoge.rs:407
+msgid "Online _Help"
+msgstr ""
+
+#: src/dialoge.rs:408
+msgid "_Report a Bug"
+msgstr ""
+
+#: src/dialoge.rs:409
 msgid "_About"
 msgstr ""
 
-#: src/dialoge.rs:375
+#: src/dialoge.rs:434
 #, no-c-format
 msgid "Open “{name}” With"
 msgstr ""
 
-#: src/dialoge.rs:379
+#: src/dialoge.rs:438
 #, no-c-format
 msgid "Select an application to open “{name}” ({type}):"
 msgstr ""
 
-#: src/dialoge.rs:397
+#: src/dialoge.rs:456
 msgid "_Show all applications"
 msgstr ""
 
-#: src/dialoge.rs:445 src/fenster.rs:163
+#: src/dialoge.rs:504 src/fenster.rs:163
 msgid "_Open"
 msgstr ""
 
-#: src/dialoge.rs:480
+#: src/dialoge.rs:539
 #, no-c-format
 msgid "“{name}” could not be started."
 msgstr ""
