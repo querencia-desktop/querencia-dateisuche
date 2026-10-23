@@ -49,8 +49,8 @@ Anwendungskennung (App-ID): `org.querencia.Dateisuche` · Binary:
 
 | | |
 |---|---|
-| Version | 0.1.4 (Tag `dateisuche/0.1.4`; folgt einem dunklen GTK-Thema, hell wie 0.1.3) |
-| Letzte Prüfung | 21.10.2026: fmt und Clippy sauber, 32 Unit-Tests; isoliert 28 Läufe (de/en, 1024×768 und 1920×1080, hell und dunkel, beim Start und beim Wechsel), Kontrast dunkel WCAG AA |
+| Version | 0.1.5 (Tag `dateisuche/0.1.5`; Info-Dialog mit Alpha-Hinweis, Website, Copyright und Lizenz, Kurzhilfe mit Online-Hilfe und „Fehler melden“); seit 0.1.4 folgt es einem dunklen GTK-Thema |
+| Letzte Prüfung | 22.10.2026 (0.1.5): fmt und Clippy sauber, 33 Unit-Tests, `i18n.py pruefen`; isoliert Deutsch/Englisch 1024×768: Kurzhilfe → Online-Hilfe, „Fehler melden“ (je über die Zugriffstaste) und Info-Dialog. 21.10.2026 (0.1.4): isoliert 28 Läufe (de/en, 1024×768 und 1920×1080, hell und dunkel, beim Start und beim Wechsel), Kontrast dunkel WCAG AA |
 | Bekannte Lücken | siehe „Alpha“ |
 | Getestet auf | Ubuntu 26.04, labwc 0.9.8, GTK 4.22, Rust 1.93 |
 | Nicht getestet | andere Distributionen, HiDPI, Mehrmonitor, sehr große Verzeichnisbäume |

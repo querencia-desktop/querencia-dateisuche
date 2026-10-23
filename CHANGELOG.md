@@ -1,5 +1,20 @@
 # Änderungen
 
+## 0.1.5 – 2026-10-22
+
+Info-Dialog und Hilfe wie in den übrigen Querencia-Programmen:
+
+- Der Info-Dialog nennt den Stand „Alpha – nicht für den Alltag
+  freigegeben“ (statt „Prototyp“), die Website querencialinux.org, die
+  Zeile „© 2026 Querencia Desktop contributors“ und die Lizenz
+  GPL-3.0-or-later. Englisch heißt er „About Search for Files“ (wie im
+  Anwendungsmenü), deutsch weiter „Info zu Querencia Dateisuche“.
+- Die Kurzhilfe (Knopf „Hilfe“; die Dateisuche hat keine Menüleiste) hat
+  zwei neue Knöpfe: „Online-Hilfe“ öffnet querencialinux.org/de/docs/
+  (englische Oberfläche: /en/docs/), „Fehler melden“ die Seite für neue
+  Fehlermeldungen auf GitHub; beides mit dem Standardbrowser der Sitzung.
+- Katalog mit vollständigem Kopf, ohne Platzhalter.
+
 ## 0.1.4 – 2026-10-21
 
 Dunkeltauglich (CSS-Welle dunkel, Alpha 2), hell unverändert:
@@ -51,7 +66,7 @@ Englisch und Deutsch über GNU gettext (Muster Querencia Editor 0.2.0):
 
 ## 0.1.1 (2026-10-18)
 
-Eigenes Programmsymbol nach Abnahmebefund des Besitzers: Lupe über einem
+Eigenes Programmsymbol nach dem Abnahmebefund: Lupe über einem
 Dokument, flächig in Querencia-Orange (#F07746) und Grau, nur als SVG
 (`hicolor/scalable`), zugleich eingebettetes Fenstersymbol. Keine PNG-Größen
 mehr. Sonst unverändert.
