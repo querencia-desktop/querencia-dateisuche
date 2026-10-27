@@ -10,7 +10,8 @@ Anleitung auf <https://querencialinux.org>.
 
 *English summary:* A "Search for Files" tool without an indexing service,
 modelled on GNOME 2's gnome-search-tool. Part of Querencia Desktop, a classic
-GNOME-2-style desktop for Wayland. Alpha software; documentation is in German.
+GNOME-2-style desktop for Wayland. Alpha software; user interface in German,
+English, Italian, Spanish and French; documentation is in German.
 
 > **Alpha (Prototyp).** Die Suche läuft jedes Mal frisch über das
 > Dateisystem. Keine Sicherheits- oder
