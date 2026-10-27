@@ -49,8 +49,8 @@ Anwendungskennung (App-ID): `org.querencia.Dateisuche` · Binary:
 
 | | |
 |---|---|
-| Version | 0.1.5 (Tag `dateisuche/0.1.5`; Info-Dialog mit Alpha-Hinweis, Website, Copyright und Lizenz, Kurzhilfe mit Online-Hilfe und „Fehler melden“); seit 0.1.4 folgt es einem dunklen GTK-Thema |
-| Letzte Prüfung | 22.10.2026 (0.1.5): fmt und Clippy sauber, 33 Unit-Tests, `i18n.py pruefen`; isoliert Deutsch/Englisch 1024×768: Kurzhilfe → Online-Hilfe, „Fehler melden“ (je über die Zugriffstaste) und Info-Dialog. 21.10.2026 (0.1.4): isoliert 28 Läufe (de/en, 1024×768 und 1920×1080, hell und dunkel, beim Start und beim Wechsel), Kontrast dunkel WCAG AA |
+| Version | 0.1.6 (Tag `dateisuche/0.1.6`; Italienisch, Spanisch, Französisch); seit 0.1.5 Info-Dialog mit Alpha-Hinweis, Website, Copyright und Lizenz, Kurzhilfe mit Online-Hilfe und „Fehler melden“); seit 0.1.4 folgt es einem dunklen GTK-Thema |
+| Letzte Prüfung | 26.10.2026 (0.1.6): fmt und Clippy sauber, 33 Unit-Tests, `i18n.py pruefen` und `msgfmt --check` für de/es/fr/it; isoliert 1024×768: `szenario-sprache.sh` de/en/it/es/fr je 7 PASS (Statuszeile, Optionen, Kontextmenü, Papierkorb-Rückfrage, Hilfe, Info); Regression `szenario.sh` de 36/37 wie die Live-Binary 0.1.5 (T19 im Prüfprofil). 22.10.2026 (0.1.5): fmt und Clippy sauber, 33 Unit-Tests, `i18n.py pruefen`; isoliert Deutsch/Englisch 1024×768: Kurzhilfe → Online-Hilfe, „Fehler melden“ (je über die Zugriffstaste) und Info-Dialog. 21.10.2026 (0.1.4): isoliert 28 Läufe (de/en, 1024×768 und 1920×1080, hell und dunkel, beim Start und beim Wechsel), Kontrast dunkel WCAG AA |
 | Bekannte Lücken | siehe „Alpha“ |
 | Getestet auf | Ubuntu 26.04, labwc 0.9.8, GTK 4.22, Rust 1.93 |
 | Nicht getestet | andere Distributionen, HiDPI, Mehrmonitor, sehr große Verzeichnisbäume |
@@ -102,13 +102,14 @@ Fälle, Ablauf und Belege: [docs/testing.md](docs/testing.md). Arbeitsweise insg
 
 Seit 0.1.2 sind die Texte englisch im Code (msgid) und deutsch in
 `po/de.po` (GNU gettext, Muster Querencia Editor 0.2.0); der deutsche
-Wortlaut ist der bisherige. Der englische Wortschatz folgt
+Wortlaut ist der bisherige. Seit 0.1.6 gibt es dazu Italienisch, Spanisch
+und Französisch (`po/it.po`, `po/es.po`, `po/fr.po`). Der englische Wortschatz folgt
 gnome-search-tool 2.x („Search for Files“, „Name contains“, „Look in
 folder“, „Select more options“). Übersetzt sind Fenster, Optionen,
 Kontextmenü, Statuszeile, Rückfragen, Hilfe, Info und die Desktop-Datei
 (`data/org.querencia.Dateisuche.desktop.in` → `…desktop`). Die Sprache folgt
-`LANGUAGE`/`LANG`; ohne deutschen Katalog erscheint Englisch. Dezimalkomma
-und Tausenderpunkt bleiben in beiden Sprachen; das Datum ist englisch
+`LANGUAGE`/`LANG`; ohne passenden Katalog erscheint Englisch. Dezimalkomma
+und Tausenderpunkt bleiben in allen Sprachen; das Datum ist englisch
 `2026-10-20 18:30`, deutsch `20.10.2026 18:30`. Befehlszeile (`--ordner`,
 `--name`), `--hilfe` und Meldungen auf stderr bleiben deutsch.
 

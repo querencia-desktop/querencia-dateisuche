@@ -16,6 +16,7 @@ ok() { echo "PASS $*" | tee -a "$R"; }
 nok() { echo "FAIL $*" | tee -a "$R"; }
 . "$(dirname "$0")/eingabe.sh"
 SPRACHE=${LANGUAGE%%:*}
+SPRACHE=${SPRACHE%%_*}
 shot() { grim "$OUT/$1-$SPRACHE.png"; }
 export QD_PROTOKOLL=$OUT/protokoll-$SPRACHE.txt
 APP=""
@@ -56,6 +57,15 @@ de)
     [ "$(status)" = "2 Dateien gefunden · 1 nicht lesbar (keine Berechtigung)" ] && ok "de: Statuszeile „$(status)“" || nok "de: Statuszeile „$(status)“"
     K_OPT=w; K_HINZU=z; K_LISTE=u; K_INFO=i
     ;;
+it | es | fr)
+    case $SPRACHE in
+    it) SOLL="2 file trovati · non leggibili: 1 (nessun permesso)"; K_OPT=o; K_VERF=d; K_HINZU=a; K_LISTE=r; K_INFO=i; K_HILFE=i; K_ZU=h ;;
+    es) SOLL="2 archivos encontrados · no legibles: 1 (sin permiso)"; K_OPT=o; K_VERF=d; K_HINZU=a; K_LISTE=r; K_INFO=a; K_HILFE=u; K_ZU=e ;;
+    fr) SOLL="2 fichiers trouvés · illisibles\u202f: 1 (pas d’autorisation)"; SOLL=$(printf "$SOLL"); K_OPT=o; K_VERF=p; K_HINZU=a; K_LISTE=r; K_INFO=p; K_HILFE=e; K_ZU=f ;;
+    esac
+    [ -n "$KAT" ] && ok "$SPRACHE: Katalog eingeblendet" || nok "$SPRACHE: kein Katalog eingeblendet"
+    [ "$(status)" = "$SOLL" ] && ok "$SPRACHE: Statuszeile „$(status)“" || nok "$SPRACHE: Statuszeile „$(status)“"
+    ;;
 *)
     [ -z "$KAT" ] && ok "$SPRACHE: kein Katalog eingeblendet" || nok "$SPRACHE: Katalog eingeblendet"
     [ "$(status)" = "2 files found · 1 not readable (no permission)" ] && ok "$SPRACHE: Statuszeile „$(status)“" || nok "$SPRACHE: Statuszeile „$(status)“"
@@ -66,7 +76,7 @@ shot s1-ergebnisse
 
 # Weitere Optionen aufklappen, Auswahlliste öffnen, erste Option hinzufügen
 q "chord alt $K_OPT" "wait 800"; shot s2-optionen
-q "chord alt v" "wait 400" "key Return" "wait 900"; shot s3-auswahlliste
+q "chord alt ${K_VERF:-v}" "wait 400" "key Return" "wait 900"; shot s3-auswahlliste
 q "key Escape" "wait 500"
 q "chord alt $K_HINZU" "wait 800"; shot s4-option-hinzugefuegt
 running && ok "weitere Optionen und Auswahlliste (Bilder s2–s4)" || nok "Absturz bei den Optionen"
@@ -83,14 +93,14 @@ else
 fi
 
 # Hilfe und Info
-q "chord alt h" "wait 1000"; shot s7-hilfe
+q "chord alt ${K_HILFE:-h}" "wait 1000"; shot s7-hilfe
 q "chord alt $K_INFO" "wait 1000"; shot s8-info
 q "key Escape" "wait 700" "key Escape" "wait 700"
 running && ok "Hilfe und Info geöffnet und geschlossen (Bilder s7, s8)" || nok "Absturz bei Hilfe/Info"
 
-# Schließen über die Zugriffstaste (de „S_chließen“, en „_Close“)
-q "chord alt c" "wait 2000"
-running && nok "Schließen beendet nicht" || ok "Schließen (Alt+C) beendet das Programm"
+# Schließen über die Zugriffstaste (de „S_chließen“, en „_Close“, it „C_hiudi“, es „C_errar“, fr „_Fermer“)
+q "chord alt ${K_ZU:-c}" "wait 2000"
+running && nok "Schließen beendet nicht" || ok "Schließen (Alt+${K_ZU:-c}) beendet das Programm"
 running && kill "$APP" 2>/dev/null
 chmod -R u+rwX "$D" 2>/dev/null || true
 echo "Ergebnis $GROESSE $SPRACHE: $(grep -c '^PASS' "$R") PASS, $(grep -c '^FAIL' "$R") FAIL" | tee -a "$R"

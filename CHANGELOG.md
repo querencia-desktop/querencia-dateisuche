@@ -1,5 +1,21 @@
 # Änderungen
 
+## 0.1.6 – 2026-10-26
+
+Italienisch, Spanisch, Französisch:
+
+- Neue Kataloge `po/it.po`, `po/es.po`, `po/fr.po` (je 96 Texte,
+  vollständig): Fenster, Optionen, Kontextmenü, Statuszeile, Rückfragen,
+  Kurzhilfe, Info und Desktop-Datei (`Name[it]=Cerca file…`,
+  `Name[es]=Buscar archivos…`, `Name[fr]=Rechercher des fichiers…`).
+  Wortschatz gnome-search-tool je Sprache und die gemeinsame
+  Querencia-Begriffstabelle; Zugriffstasten je Fenster, Kontextmenü und
+  Dialog eindeutig.
+- Zähler ohne Pluralform („nicht lesbar“, „übersprungen“) stehen in it/es/fr
+  als „non leggibili: 1“ usw., damit auch die Einzahl stimmt.
+- Prüfwerkzeug: `szenario-sprache.sh` kennt it/es/fr (Statuszeile, Tasten).
+- Sonst keine Änderung: Deutsch, Englisch, Suche, Farben und Symbol wie 0.1.5.
+
 ## 0.1.5 – 2026-10-22
 
 Info-Dialog und Hilfe wie in den übrigen Querencia-Programmen:

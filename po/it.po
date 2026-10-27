@@ -1,0 +1,482 @@
+# Querencia Dateisuche: italienische Übersetzung.
+# Copyright (C) 2026 Querencia Desktop contributors
+# Diese Datei steht unter derselben Lizenz wie Querencia Dateisuche (GPL-3.0-or-later).
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: querencia-dateisuche\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2026-10-26 23:21+0100\n"
+"Last-Translator: Querencia Desktop contributors\n"
+"Language-Team: Italiano (Querencia)\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. TRANSLATORS: Desktop-Datei, Schlüssel Name
+#: data/org.querencia.Dateisuche.desktop.in:12
+msgid "Search for Files…"
+msgstr "Cerca file…"
+
+#. TRANSLATORS: Desktop-Datei, Schlüssel GenericName
+#: data/org.querencia.Dateisuche.desktop.in:13
+msgid "File Search"
+msgstr "Ricerca file"
+
+#. TRANSLATORS: Desktop-Datei, Schlüssel Comment
+#: data/org.querencia.Dateisuche.desktop.in:14
+msgid "Locate documents and folders by name, content, date and size"
+msgstr "Trova documenti e cartelle per nome, contenuto, data e dimensione"
+
+#. TRANSLATORS: Desktop-Datei, Schlüssel Keywords (Liste, Einträge mit ; trennen und abschließen)
+#: data/org.querencia.Dateisuche.desktop.in:20
+msgid "search;find;files;"
+msgstr "cerca;trova;file;ricerca;"
+
+#: src/dialoge.rs:137
+msgid "_Close"
+msgstr "_Chiudi"
+
+#: src/dialoge.rs:170 src/dialoge.rs:243 src/dialoge.rs:503
+msgid "_Cancel"
+msgstr "_Annulla"
+
+#. TRANSLATORS: Adresse der Online-Hilfe; nur das Sprachkürzel anpassen (deutsch …/de/docs/).
+#: src/dialoge.rs:284
+msgid "https://querencialinux.org/en/docs/"
+msgstr "https://querencialinux.org/it/docs/"
+
+#. TRANSLATORS: Fenstertitel des Info-Dialogs; deutsch mit dem Eigennamen „Querencia Dateisuche“, englisch mit dem Namen aus dem Anwendungsmenü.
+#: src/dialoge.rs:300
+msgid "About Search for Files"
+msgstr "Informazioni su Cerca file"
+
+#. TRANSLATORS: Programmname und Version im Info-Dialog; deutsch „Querencia Dateisuche {version}“.
+#: src/dialoge.rs:311
+#, no-c-format
+msgid "Search for Files {version}"
+msgstr "Cerca file {version}"
+
+#: src/dialoge.rs:319
+msgid ""
+"“Search for Files…” for Querencia Desktop\n"
+"modelled on gnome-search-tool (GNOME 2),\n"
+"without an indexing service."
+msgstr ""
+"«Cerca file…» per Querencia Desktop\n"
+"sul modello di gnome-search-tool (GNOME 2),\n"
+"senza servizio di indicizzazione."
+
+#: src/dialoge.rs:325
+msgid "Alpha – not released for everyday use."
+msgstr "Alpha – non ancora pronta per l’uso quotidiano."
+
+#: src/dialoge.rs:345
+msgid "License: GPL-3.0-or-later"
+msgstr "Licenza: GPL-3.0-or-later"
+
+#. TRANSLATORS: Pango-Markup; <b>, <tt> und die Leerzeilen zwischen den Absätzen beibehalten, Befehlszeile und Pfad nicht übersetzen.
+#: src/dialoge.rs:367
+msgid ""
+"<b>Name contains</b>: part of the file name, upper and lower case do not matter. With the wildcards <tt>*</tt> (any number of characters) and <tt>?</tt> (one character) the whole name must match, e.g. <tt>*.txt</tt>.\n"
+"\n"
+"<b>Look in folder</b>: the starting folder; subfolders are always searched. Hidden folders and files (<tt>.name</tt>) and backup files (<tt>name~</tt>) only with the option of the same name.\n"
+"\n"
+"<b>More options</b>: choose an option from the list and press “Add”; all chosen options must apply at the same time. “Contains the text” reads only text files up to the configured size (default 10 MB, <tt>~/.config/querencia/dateisuche.ini</tt>), case is ignored. “Name matches regular expression” respects case.\n"
+"\n"
+"<b>Results</b>: double-click or Enter opens with the default application. Right mouse button: Open, Open With…, Open Containing Folder, Copy Path (Ctrl+C), Move to Trash (Delete, with confirmation), Save Results As a text file. Column headers sort.\n"
+"\n"
+"<b>Command line</b>: <tt>querencia-dateisuche [--ordner PFAD] [--name MUSTER] [--suchen]</tt>"
+msgstr ""
+"<b>Il nome contiene</b>: parte del nome del file, maiuscole e minuscole non contano. Con i caratteri jolly <tt>*</tt> (un numero qualsiasi di caratteri) e <tt>?</tt> (un carattere) deve corrispondere l’intero nome, ad es. <tt>*.txt</tt>.\n"
+"\n"
+"<b>Cerca nella cartella</b>: la cartella di partenza; le sottocartelle vengono sempre esaminate. Cartelle e file nascosti (<tt>.nome</tt>) e file di backup (<tt>nome~</tt>) solo con l’opzione omonima.\n"
+"\n"
+"<b>Altre opzioni</b>: scegliere un’opzione dall’elenco e premere «Aggiungi»; tutte le opzioni scelte devono valere contemporaneamente. «Contiene il testo» legge solo file di testo fino alla dimensione impostata (predefinita 10 MB, <tt>~/.config/querencia/dateisuche.ini</tt>), maiuscole e minuscole vengono ignorate. «Il nome corrisponde all’espressione regolare» distingue maiuscole e minuscole.\n"
+"\n"
+"<b>Risultati</b>: doppio clic o Invio apre con l’applicazione predefinita. Tasto destro del mouse: Apri, Apri con…, Apri cartella contenitore, Copia percorso (Ctrl+C), Sposta nel cestino (Canc, con conferma), Salva risultati come file di testo. Le intestazioni delle colonne ordinano.\n"
+"\n"
+"<b>Riga di comando</b>: <tt>querencia-dateisuche [--ordner PFAD] [--name MUSTER] [--suchen]</tt>"
+
+#: src/dialoge.rs:398
+#, no-c-format
+msgid "Help for “{title}”"
+msgstr "Aiuto per «{title}»"
+
+#. TRANSLATORS: Knöpfe der Kurzhilfe (statt Hilfe-Menü); Zugriffstasten im Dialog verschieden halten.
+#: src/dialoge.rs:407
+msgid "Online _Help"
+msgstr "Aiuto in _linea"
+
+#: src/dialoge.rs:408
+msgid "_Report a Bug"
+msgstr "_Segnala un problema"
+
+#: src/dialoge.rs:409
+msgid "_About"
+msgstr "_Informazioni"
+
+#: src/dialoge.rs:434
+#, no-c-format
+msgid "Open “{name}” With"
+msgstr "Apri «{name}» con"
+
+#: src/dialoge.rs:438
+#, no-c-format
+msgid "Select an application to open “{name}” ({type}):"
+msgstr "Scegliere un’applicazione per aprire «{name}» ({type}):"
+
+#: src/dialoge.rs:456
+msgid "_Show all applications"
+msgstr "_Mostra tutte le applicazioni"
+
+#: src/dialoge.rs:504 src/fenster.rs:163
+msgid "_Open"
+msgstr "A_pri"
+
+#: src/dialoge.rs:539
+#, no-c-format
+msgid "“{name}” could not be started."
+msgstr "Impossibile avviare «{name}»."
+
+#: src/fenster.rs:164
+msgid "Open _With…"
+msgstr "Apri _con…"
+
+#: src/fenster.rs:170
+msgid "Open Containing _Folder"
+msgstr "Apri cartella co_ntenitore"
+
+#: src/fenster.rs:171
+msgid "_Copy Path to Clipboard"
+msgstr "Copia percorso negli _appunti"
+
+#: src/fenster.rs:176
+msgid "Move to _Trash…"
+msgstr "Sposta nel ces_tino…"
+
+#: src/fenster.rs:180
+msgid "_Save Results As…"
+msgstr "_Salva risultati come…"
+
+#. TRANSLATORS: Hauptfenster wie gnome-search-tool 2.x; Zugriffstasten im Fenster verschieden halten.
+#: src/fenster.rs:203
+msgid "_Name contains:"
+msgstr "Il _nome contiene:"
+
+#: src/fenster.rs:207
+msgid "e.g. report or *.txt"
+msgstr "ad es. relazione o *.txt"
+
+#: src/fenster.rs:209
+msgid "_Look in folder:"
+msgstr "Cerca nella _cartella:"
+
+#: src/fenster.rs:224
+msgid "Choose a folder…"
+msgstr "Scegli una cartella…"
+
+#: src/fenster.rs:232
+msgid "Select more _options"
+msgstr "Seleziona altre _opzioni"
+
+#: src/fenster.rs:239
+msgid "A_vailable options:"
+msgstr "Opzioni _disponibili:"
+
+#: src/fenster.rs:245
+msgid "_Add"
+msgstr "_Aggiungi"
+
+#: src/fenster.rs:254
+msgid "S_earch results:"
+msgstr "_Risultati della ricerca:"
+
+#: src/fenster.rs:289
+msgid "_Help"
+msgstr "A_iuto"
+
+#. TRANSLATORS: im Deutschen „S_chließen“ (S gehört „_Suchen“).
+#: src/fenster.rs:291
+msgctxt "main window"
+msgid "_Close"
+msgstr "C_hiudi"
+
+#: src/fenster.rs:292 src/fenster.rs:865
+msgid "_Find"
+msgstr "_Trova"
+
+#: src/fenster.rs:523
+msgid "Name"
+msgstr "Nome"
+
+#: src/fenster.rs:533 src/treffer.rs:66
+msgid "Folder"
+msgstr "Cartella"
+
+#: src/fenster.rs:543
+msgid "Size"
+msgstr "Dimensione"
+
+#: src/fenster.rs:557
+msgid "Type"
+msgstr "Tipo"
+
+#: src/fenster.rs:567
+msgid "Date Modified"
+msgstr "Modificato"
+
+#. TRANSLATORS: Beschriftung einer gewählten Option mit Eingabefeld.
+#: src/fenster.rs:607
+#, no-c-format
+msgid "{option}:"
+msgstr "{option}:"
+
+#. TRANSLATORS: kleinste Größeneinheit in der Auswahl (danach KB, MB, GB).
+#: src/fenster.rs:656
+msgid "bytes"
+msgstr "byte"
+
+#: src/fenster.rs:685
+msgid "Remove this option"
+msgstr "Rimuovi questa opzione"
+
+#: src/fenster.rs:720
+msgid "Home Folder"
+msgstr "Cartella home"
+
+#: src/fenster.rs:738
+msgid "Choose a Folder"
+msgstr "Scegli una cartella"
+
+#: src/fenster.rs:740
+msgid "_Select"
+msgstr "_Seleziona"
+
+#: src/fenster.rs:775
+msgid "The search cannot be started."
+msgstr "Impossibile avviare la ricerca."
+
+#. TRANSLATORS: Suchknopf während der Suche (im Deutschen „S_topp“).
+#: src/fenster.rs:782
+msgid "_Stop"
+msgstr "_Ferma"
+
+#: src/fenster.rs:785
+msgid "Searching…"
+msgstr "Ricerca in corso…"
+
+#: src/fenster.rs:810
+msgid "Stopping the search…"
+msgstr "Interruzione della ricerca…"
+
+#: src/fenster.rs:846
+#, no-c-format
+msgid "Searching… {status}"
+msgstr "Ricerca in corso… {status}"
+
+#: src/fenster.rs:871
+#, no-c-format
+msgid "{status} (search stopped)"
+msgstr "{status} (ricerca interrotta)"
+
+#: src/fenster.rs:874
+#, no-c-format
+msgid "{status} · {count} not readable (no permission)"
+msgstr "{status} · non leggibili: {count} (nessun permesso)"
+
+#: src/fenster.rs:883
+#, no-c-format
+msgid "{status} · {count} skipped (binary or too large)"
+msgstr "{status} · saltati: {count} (binari o troppo grandi)"
+
+#: src/fenster.rs:958
+#, no-c-format
+msgid "“{name}” could not be opened."
+msgstr "Impossibile aprire «{name}»."
+
+#: src/fenster.rs:981
+#, no-c-format
+msgid "The folder “{folder}” could not be opened."
+msgstr "Impossibile aprire la cartella «{folder}»."
+
+#: src/fenster.rs:993
+#, no-c-format
+msgid "Path copied: {path}"
+msgstr "Percorso copiato: {path}"
+
+#: src/fenster.rs:1006
+#, no-c-format
+msgid ""
+"The folder will be moved from “{folder}” to the trash and can be restored from there."
+msgstr ""
+"La cartella verrà spostata da «{folder}» nel cestino e potrà essere ripristinata da lì."
+
+#: src/fenster.rs:1011
+#, no-c-format
+msgid ""
+"The file will be moved from “{folder}” to the trash and can be restored from there."
+msgstr ""
+"Il file verrà spostato da «{folder}» nel cestino e potrà essere ripristinato da lì."
+
+#: src/fenster.rs:1018
+#, no-c-format
+msgid "Move “{name}” to the trash?"
+msgstr "Spostare «{name}» nel cestino?"
+
+#: src/fenster.rs:1020
+msgid "Move to _Trash"
+msgstr "Sposta nel ces_tino"
+
+#: src/fenster.rs:1034
+#, no-c-format
+msgid "“{name}” moved to the trash."
+msgstr "«{name}» spostato nel cestino."
+
+#: src/fenster.rs:1041
+#, no-c-format
+msgid "“{name}” could not be moved to the trash."
+msgstr "Impossibile spostare «{name}» nel cestino."
+
+#: src/fenster.rs:1073
+msgid "Save Search Results As"
+msgstr "Salva risultati della ricerca come"
+
+#: src/fenster.rs:1075
+msgid "_Save"
+msgstr "_Salva"
+
+#: src/fenster.rs:1091
+#, no-c-format
+msgid "Results saved: {path}"
+msgstr "Risultati salvati: {path}"
+
+#: src/fenster.rs:1099
+#, no-c-format
+msgid "“{path}” could not be written."
+msgstr "Impossibile scrivere «{path}»."
+
+#. TRANSLATORS: Dateigröße unter 1 KB.
+#: src/format.rs:17
+#, no-c-format
+msgid "{n} byte"
+msgid_plural "{n} bytes"
+msgstr[0] "{n} byte"
+msgstr[1] "{n} byte"
+
+#. TRANSLATORS: Spalte „Date Modified“, Format von g_date_time_format.
+#: src/format.rs:36
+msgid "%Y-%m-%d %H:%M"
+msgstr "%d/%m/%Y %H:%M"
+
+#: src/format.rs:51
+msgid "No files found"
+msgstr "Nessun file trovato"
+
+#. TRANSLATORS: {count} mit Tausenderpunkten, z. B. „1.234“.
+#: src/format.rs:54
+#, no-c-format
+msgid "{count} file found"
+msgid_plural "{count} files found"
+msgstr[0] "{count} file trovato"
+msgstr[1] "{count} file trovati"
+
+#: src/kriterien.rs:93
+msgid "Contains the text"
+msgstr "Contiene il testo"
+
+#: src/kriterien.rs:94
+msgid "Date modified less than"
+msgstr "Modificato da meno di"
+
+#: src/kriterien.rs:95
+msgid "Date modified more than"
+msgstr "Modificato da più di"
+
+#: src/kriterien.rs:96
+msgid "Size at least"
+msgstr "Dimensione almeno"
+
+#: src/kriterien.rs:97
+msgid "Size at most"
+msgstr "Dimensione al massimo"
+
+#: src/kriterien.rs:98
+msgid "File is empty"
+msgstr "Il file è vuoto"
+
+#: src/kriterien.rs:99
+msgid "Owned by user"
+msgstr "Proprietario"
+
+#: src/kriterien.rs:100
+msgid "Owned by group"
+msgstr "Gruppo"
+
+#: src/kriterien.rs:101
+msgid "Name matches regular expression"
+msgstr "Il nome corrisponde all’espressione regolare"
+
+#: src/kriterien.rs:102
+msgid "Show hidden and backup files"
+msgstr "Mostra file nascosti e di backup"
+
+#: src/kriterien.rs:103
+msgid "Follow symbolic links"
+msgstr "Segui collegamenti simbolici"
+
+#: src/kriterien.rs:104
+msgid "Search other file systems"
+msgstr "Cerca in altri file system"
+
+#: src/kriterien.rs:105
+msgid "Only folders"
+msgstr "Solo cartelle"
+
+#. TRANSLATORS: hinter der Zahl bei „Date modified less/more than“.
+#: src/kriterien.rs:113
+msgid "days"
+msgstr "giorni"
+
+#: src/kriterien.rs:322
+#, no-c-format
+msgid "Unusable name pattern: {error}"
+msgstr "Modello di nome non utilizzabile: {error}"
+
+#: src/kriterien.rs:336
+#, no-c-format
+msgid "Unusable search text: {error}"
+msgstr "Testo di ricerca non utilizzabile: {error}"
+
+#: src/kriterien.rs:356
+#, no-c-format
+msgid "Unknown user “{name}”"
+msgstr "Utente sconosciuto «{name}»"
+
+#: src/kriterien.rs:363
+#, no-c-format
+msgid "Unknown group “{name}”"
+msgstr "Gruppo sconosciuto «{name}»"
+
+#: src/kriterien.rs:370
+#, no-c-format
+msgid "Unusable regular expression: {error}"
+msgstr "Espressione regolare non utilizzabile: {error}"
+
+#. TRANSLATORS: Fenstertitel (gnome-search-tool 2.x „Search for Files“).
+#: src/main.rs:33
+msgid "Search for Files"
+msgstr "Cerca file"
+
+#: src/suche.rs:101
+#, no-c-format
+msgid "“{folder}” is not a folder or is not readable."
+msgstr "«{folder}» non è una cartella o non è leggibile."
+
+#: src/suche.rs:113
+#, no-c-format
+msgid "The search thread cannot be started: {error}"
+msgstr "Impossibile avviare il thread di ricerca: {error}"
